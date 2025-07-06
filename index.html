@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Fortune Gem - Slot Machine</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom, #3a003a, #1a001a);
+      font-family: sans-serif;
+      color: #fff;
+      text-align: center;
+      padding-top: 40px;
+    }
+    h1 {
+      font-size: 2em;
+      color: gold;
+    }
+    .slot-machine {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      max-width: 960px;
+      margin: 30px auto;
+    }
+    .reel {
+      background: #222;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px #ff00ff;
+    }
+    .reel img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 1.2em;
+      background: gold;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #ffcc00;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎰 Fortune Gem 🎰</h1>
+  <div class="slot-machine" id="slot-machine">
+    <!-- 3x3 reels -->
+    <div class="reel"><img src="symbol_1.png"></div>
+    <div class="reel"><img src="symbol_2.png"></div>
+    <div class="reel"><img src="symbol_3.png"></div>
+    <div class="reel"><img src="symbol_4.png"></div>
+    <div class="reel"><img src="symbol_5.png"></div>
+    <div class="reel"><img src="symbol_6.png"></div>
+    <div class="reel"><img src="symbol_7.png"></div>
+    <div class="reel"><img src="symbol_8.png"></div>
+    <div class="reel"><img src="symbol_9.png"></div>
+  </div>
+  <button onclick="spin()">Girar</button>
+
+  <script>
+    const symbols = [
+      'symbol_1.png', 'symbol_2.png', 'symbol_3.png',
+      'symbol_4.png', 'symbol_5.png', 'symbol_6.png',
+      'symbol_7.png', 'symbol_8.png', 'symbol_9.png'
+    ];
+
+    function spin() {
+      const reels = document.querySelectorAll('.reel img');
+      reels.forEach((img, i) => {
+        let rand = Math.floor(Math.random() * symbols.length);
+        img.src = symbols[rand];
+      });
+    }
+  </script>
+</body>
+</html>
