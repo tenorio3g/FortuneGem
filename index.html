@@ -1,83 +1,282 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Fortune Gem - Slot Machine</title>
+  <meta charset="UTF-8" />
+  <title>Fortune Gem Slot</title>
   <style>
     body {
       background: linear-gradient(to bottom, #3a003a, #1a001a);
       font-family: sans-serif;
       color: #fff;
       text-align: center;
-      padding-top: 40px;
+      padding: 30px;
+      overflow: hidden;
     }
     h1 {
-      font-size: 2em;
       color: gold;
     }
     .slot-machine {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      display: flex;
       justify-content: center;
-      align-items: center;
-      max-width: 960px;
-      margin: 30px auto;
+      gap: 20px;
+      margin: 20px auto;
     }
-    .reel {
-      background: #222;
-      padding: 10px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px #ff00ff;
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
     }
-    .reel img {
-      width: 100px;
-      height: 100px;
+    .column img {
+      width: 80px;
+      height: 80px;
       object-fit: contain;
+      border-radius: 10px;
+      background: #222;
+      box-shadow: 0 0 10px #ff00ff;
+      transition: transform 0.3s, filter 0.3s;
+    }
+    .controls {
+      margin-top: 20px;
     }
     button {
-      padding: 12px 24px;
-      font-size: 1.2em;
-      background: gold;
-      color: #000;
+      padding: 10px 20px;
+      font-size: 1em;
       border: none;
+      background: gold;
+      color: black;
       border-radius: 10px;
       cursor: pointer;
     }
     button:hover {
       background: #ffcc00;
     }
+    .result {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+    .winner {
+      animation: shine 0.8s infinite alternate;
+    }
+    @keyframes shine {
+      0% { filter: brightness(1) drop-shadow(0 0 5px gold); transform: scale(1); }
+      100% { filter: brightness(1.8) drop-shadow(0 0 15px gold); transform: scale(1.15); }
+    }
+    .balance {
+      font-size: 1.5em;
+      margin: 20px 0;
+    }
+    .highlight {
+      animation: highlight 1s ease-in-out;
+    }
+    @keyframes highlight {
+      0% { color: gold; transform: scale(1); }
+      50% { color: #00ff00; transform: scale(1.3); }
+      100% { color: gold; transform: scale(1); }
+    }
+    #wheelModal {
+      display: none; position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%; background: rgba(0,0,0,0.85);
+      color: #fff; font-size: 1.5em; justify-content: center;
+      align-items: center; flex-direction: column;
+    }
+    #wheelModal .wheel-content {
+      background: #222; padding: 30px; border-radius: 20px;
+      box-shadow: 0 0 20px gold; text-align: center;
+    }
+    .wheel {
+      width: 150px; height: 150px; border: 8px solid gold;
+      border-radius: 50%; border-top: 8px solid #ff00ff;
+      animation: spin 13s ease-out forwards;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(10020deg); }
+    }
+
+    /* Splash Screen */
+    #splashScreen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; z-index: 9999;
+    }
+    #splashScreen img {
+      max-width: 300px; margin-bottom: 30px;
+    }
+    #splashScreen button {
+      padding: 15px 40px; font-size: 1.5em; background: gold; color: #000;
+      border: none; border-radius: 15px; cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <h1>🎰 Fortune Gem 🎰</h1>
-  <div class="slot-machine" id="slot-machine">
-    <!-- 3x3 reels -->
-    <div class="reel"><img src="symbol_1.png"></div>
-    <div class="reel"><img src="symbol_2.png"></div>
-    <div class="reel"><img src="symbol_3.png"></div>
-    <div class="reel"><img src="symbol_4.png"></div>
-    <div class="reel"><img src="symbol_5.png"></div>
-    <div class="reel"><img src="symbol_6.png"></div>
-    <div class="reel"><img src="symbol_7.png"></div>
-    <div class="reel"><img src="symbol_8.png"></div>
-    <div class="reel"><img src="symbol_9.png"></div>
+
+  <!-- SPLASH SCREEN -->
+  <div id="splashScreen">
+    <img src="assets/logo_slot.png" alt="Logo del juego">
+    <button onclick="startGame()">🎰 JUGAR</button>
   </div>
-  <button onclick="spin()">Girar</button>
+
+  <h1>🎰 Fortune Gem Slot</h1>
+  <div class="balance">Saldo: $<span id="balance">100</span></div>
+
+  <div class="slot-machine">
+    <div class="column" id="col-0"><img><img><img></div>
+    <div class="column" id="col-1"><img><img><img></div>
+    <div class="column" id="col-2"><img><img><img></div>
+    <div class="column" id="col-mult"><img><img><img></div>
+  </div>
+
+  <div class="controls">
+    <button onclick="spin()">Girar ($5)</button>
+  </div>
+
+  <div class="result" id="result">¡Buena suerte!</div>
+
+  <div id="wheelModal" style="display:none;" class="flex">
+    <div class="wheel-content">
+      <div class="wheel"></div>
+      <div id="wheelStatus">Girando...</div>
+      <div id="wheelResult"></div>
+    </div>
+  </div>
+
+  <!-- AUDIOS -->
+  <audio id="spinSound" src="assets/spin.mp3"></audio>
+  <audio id="winSound" src="assets/win.mp3"></audio>
+  <audio id="wheelSound" src="assets/wheel.mp3"></audio>
+  <audio id="bgMusic" src="assets/background.mp3" loop preload="auto"></audio>
 
   <script>
-    const symbols = [
-      'symbol_1.png', 'symbol_2.png', 'symbol_3.png',
-      'symbol_4.png', 'symbol_5.png', 'symbol_6.png',
-      'symbol_7.png', 'symbol_8.png', 'symbol_9.png'
-    ];
+    let balance = 100;
+    const bet = 5;
+    const balanceEl = document.getElementById('balance');
+
+    const symbols = ['symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png'];
+    const symbolValues = {'symbol_1.png':2,'symbol_2.png':4,'symbol_3.png':6,'symbol_4.png':0};
+    const multipliers = [1,2,3,5,10,'wheel'];
+
+    function startGame() {
+      document.getElementById('splashScreen').style.display = 'none';
+      const bgMusic = document.getElementById('bgMusic');
+      
+      bgMusic.play().catch(() => console.log('Autoplay bloqueado'));
+    }
+
+    function getSymbolName(src) {
+      return symbols.find(s => src.includes(s));
+    }
 
     function spin() {
-      const reels = document.querySelectorAll('.reel img');
-      reels.forEach((img, i) => {
-        let rand = Math.floor(Math.random() * symbols.length);
-        img.src = symbols[rand];
-      });
+      if (balance < bet) {
+        alert('Saldo insuficiente');
+        return;
+      }
+
+      balance -= bet;
+      updateBalance();
+
+      const spinSound = document.getElementById('spinSound');
+      spinSound.currentTime = 0; spinSound.play();
+
+      const cols = [0,1,2].map(i => document.querySelectorAll(`#col-${i} img`));
+      const multCol = document.querySelectorAll('#col-mult img');
+      const resultText = document.getElementById('result');
+
+      document.querySelectorAll('img').forEach(img => img.classList.remove('winner'));
+      resultText.textContent = 'Girando...';
+
+      let interval = setInterval(() => {
+        cols.forEach(col => {
+          const top = symbols[Math.floor(Math.random()*symbols.length)];
+          col[2].src = col[1].src; col[1].src = col[0].src; col[0].src = top;
+        });
+        multCol.forEach(img => {
+          const val = multipliers[Math.floor(Math.random()*multipliers.length)];
+          img.dataset.value = val;
+          img.src = val==='wheel' ? 'assets/mult_wheel.png' : `assets/mult_${val}.png`;
+        });
+      }, 100);
+
+      setTimeout(() => {
+        clearInterval(interval);
+        const grid = cols.map(col => Array.from(col).map(img => getSymbolName(img.src)));
+        const multiplier = multCol[1].dataset.value;
+
+        let winningSymbol = null; let winningCells = [];
+
+        for (let row = 0; row < 3; row++) {
+          if (grid[0][row]===grid[1][row] && grid[1][row]===grid[2][row]) {
+            winningSymbol = grid[0][row];
+            winningCells.push(cols[0][row], cols[1][row], cols[2][row]);
+          }
+        }
+
+        if (!winningSymbol) {
+          if (grid[0][0]===grid[1][1] && grid[1][1]===grid[2][2]) {
+            winningSymbol = grid[0][0];
+            winningCells.push(cols[0][0], cols[1][1], cols[2][2]);
+          } else if (grid[0][2]===grid[1][1] && grid[1][1]===grid[2][0]) {
+            winningSymbol = grid[0][2];
+            winningCells.push(cols[0][2], cols[1][1], cols[2][0]);
+          }
+        }
+
+        if (winningSymbol) {
+          winningCells.forEach(img => img.classList.add('winner'));
+          multCol[1].classList.add('winner');
+          document.getElementById('winSound').play();
+        }
+
+        if (multiplier === 'wheel') {
+          multCol[1].classList.add('winner');
+          document.getElementById('wheelSound').play();
+          let basePrize = winningSymbol && !winningSymbol.includes('symbol_4') ? symbolValues[winningSymbol] : 0;
+          openWheelModal(resultText, basePrize);
+        } else {
+          const multNum = parseInt(multiplier) || 1;
+          if (winningSymbol) {
+            const base = symbolValues[winningSymbol];
+            const prize = base * multNum;
+            balance += prize;
+            updateBalance(true);
+            resultText.textContent = `🎉 ¡Ganaste! Base: $${base} x${multNum} = $${prize}`;
+          } else {
+            resultText.textContent = 'Intenta de nuevo';
+          }
+        }
+      }, 2000);
+    }
+
+    function openWheelModal(resultText, basePrize) {
+      const modal = document.getElementById('wheelModal');
+      const wheelStatus = document.getElementById('wheelStatus');
+      const wheelResult = document.getElementById('wheelResult');
+      const bonusOptions = [5,10,15,20,50];
+
+      modal.style.display = 'flex';
+      wheelStatus.textContent = '🎡 Girando...';
+      wheelResult.textContent = '';
+
+      setTimeout(() => {
+        const bonus = bonusOptions[Math.floor(Math.random()*bonusOptions.length)];
+        wheelStatus.textContent = '🎉 Resultado:';
+        wheelResult.textContent = `$${bonus}`;
+        setTimeout(() => {
+          modal.style.display = 'none';
+          const total = basePrize + bonus;
+          balance += total;
+          updateBalance(true);
+          resultText.textContent = `🎡 Wheel Bonus: Base $${basePrize} + Ruleta $${bonus} = Total $${total}`;
+        }, 12000);
+      }, 12000);
+    }
+
+    function updateBalance(highlight = false) {
+      balanceEl.textContent = balance;
+      if (highlight) {
+        balanceEl.classList.add('highlight');
+        setTimeout(() => balanceEl.classList.remove('highlight'), 1000);
+      }
     }
   </script>
 </body>
