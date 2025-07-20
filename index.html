@@ -141,10 +141,10 @@
   </div>
 
   <!-- AUDIOS -->
-  <audio id="spinSound" src="assets/spin.mp3"></audio>
-  <audio id="winSound" src="assets/win.mp3"></audio>
-  <audio id="wheelSound" src="assets/wheel.mp3"></audio>
-  <audio id="bgMusic" src="assets/background.mp3" loop preload="auto"></audio>
+  <audio id="spinSound" src="spin.mp3"></audio>
+  <audio id="winSound" src="win.mp3"></audio>
+  <audio id="wheelSound" src="wheel.mp3"></audio>
+  <audio id="bgMusic" src="background.mp3" loop preload="auto"></audio>
 
   <script>
     let balance = 100;
@@ -193,7 +193,7 @@
         multCol.forEach(img => {
           const val = multipliers[Math.floor(Math.random()*multipliers.length)];
           img.dataset.value = val;
-          img.src = val==='wheel' ? 'assets/mult_wheel.png' : `assets/mult_${val}.png`;
+          img.src = val==='wheel' ? 'mult_wheel.png' : `assets/mult_${val}.png`;
         });
       }, 100);
 
