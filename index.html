@@ -147,8 +147,8 @@
   <audio id="bgMusic" src="background.mp3" loop preload="auto"></audio>
 
   <script>
-    let balance = 100;
-    const bet = 5;
+    let balance = 1000;
+    const bet = 50;
     const balanceEl = document.getElementById('balance');
 
     const symbols = ['symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png'];
@@ -193,7 +193,7 @@
         multCol.forEach(img => {
           const val = multipliers[Math.floor(Math.random()*multipliers.length)];
           img.dataset.value = val;
-          img.src = val==='wheel' ? 'mult_wheel.png' : `assets/mult_${val}.png`;
+          img.src = val==='wheel' ? 'mult_wheel.png' : `mult_${val}.png`;
         });
       }, 100);
 
@@ -251,7 +251,7 @@
       const modal = document.getElementById('wheelModal');
       const wheelStatus = document.getElementById('wheelStatus');
       const wheelResult = document.getElementById('wheelResult');
-      const bonusOptions = [5,10,15,20,50];
+      const bonusOptions = [5,100,15,230,150];
 
       modal.style.display = 'flex';
       wheelStatus.textContent = '🎡 Girando...';
