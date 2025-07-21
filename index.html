@@ -4,6 +4,32 @@
   <meta charset="UTF-8" />
   <title>Fortune Gem Slot</title>
   <style>
+.wheel-container {
+  position: relative;
+  width: 250px;
+  height: 250px;
+}
+
+#wheelImage {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; 
+  height: 0; 
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-bottom: 30px solid gold;
+}
+
+    
     body {
       background: linear-gradient(to bottom, #3a003a, #1a001a);
       font-family: sans-serif;
@@ -132,12 +158,17 @@
 
   <div class="result" id="result">¡Buena suerte!</div>
 
-  <div id="wheelModal" style="display:none;" class="flex">
+  <div id="wheelModal">
     <div class="wheel-content">
-      <div class="wheel"></div>
+      <div class="wheel-container">
+        <img src="wheel.png" id="wheelImage" class="wheel-static">
+        <div class="pointer"></div>
+      </div>
       <div id="wheelStatus">Girando...</div>
       <div id="wheelResult"></div>
     </div>
+  </div>
+
   </div>
 
   <!-- AUDIOS -->
@@ -247,29 +278,44 @@
       }, 2000);
     }
 
-    function openWheelModal(resultText, basePrize) {
-      const modal = document.getElementById('wheelModal');
-      const wheelStatus = document.getElementById('wheelStatus');
-      const wheelResult = document.getElementById('wheelResult');
-      const bonusOptions = [5,1000,15,230,15000];
+function openWheelModal(resultText, basePrize) {
+  const modal = document.getElementById('wheelModal');
+  const wheelStatus = document.getElementById('wheelStatus');
+  const wheelResult = document.getElementById('wheelResult');
+  const wheelImage = document.getElementById('wheelImage');
 
-      modal.style.display = 'flex';
-      wheelStatus.textContent = '🎡 Girando...';
-      wheelResult.textContent = '';
+  const bonusOptions = [5,10,15,20,50];
+  const degreesPerSlice = 360 / bonusOptions.length;
 
-      setTimeout(() => {
-        const bonus = bonusOptions[Math.floor(Math.random()*bonusOptions.length)];
-        wheelStatus.textContent = '🎉 Resultado:';
-        wheelResult.textContent = `$${bonus}`;
-        setTimeout(() => {
-          modal.style.display = 'none';
-          const total = basePrize + bonus;
-          balance += total;
-          updateBalance(true);
-          resultText.textContent = `🎡 Wheel Bonus: Base $${basePrize} + Ruleta $${bonus} = Total $${total}`;
-        }, 12000);
-      }, 12000);
-    }
+  modal.style.display = 'flex';
+  wheelStatus.textContent = '🎡 Preparando ruleta...';
+  wheelResult.textContent = '';
+
+  // Espera 2 segundos para mostrar la ruleta girando:
+  setTimeout(() => {
+    // Elegir premio al azar
+    const prizeIndex = Math.floor(Math.random() * bonusOptions.length);
+    const prize = bonusOptions[prizeIndex];
+    const extraSpins = 5; // vueltas extras para que se vea pro
+
+    // Calcular rotación final
+    const angle = 360 * extraSpins + (prizeIndex * degreesPerSlice) + degreesPerSlice/2;
+
+    wheelImage.style.transform = `rotate(${angle}deg)`;
+
+    // Mostrar resultado después de que termine de girar (~5s)
+    setTimeout(() => {
+      wheelStatus.textContent = '🎉 Resultado:';
+      wheelResult.textContent = `$${prize}`;
+      const total = basePrize + prize;
+      balance += total;
+      updateBalance(true);
+      resultText.textContent = `🎡 Wheel Bonus: Base $${basePrize} + Ruleta $${prize} = Total $${total}`;
+      setTimeout(() => modal.style.display = 'none', 2000);
+    }, 5000);
+
+  }, 2000); // Espera antes de girar
+}
 
     function updateBalance(highlight = false) {
       balanceEl.textContent = balance;
