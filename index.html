@@ -197,20 +197,14 @@
   function showFloatingWin(msg) {
     const floating = document.getElementById('floatingWin');
     setTimeout(() => {
-      floating.textContent = msg;
-      floating.classList.add('show');
-      setTimeout(() => floating.classList.remove('show'), 8000);
+    floating.textContent = msg;
+    floating.classList.add('show');
+    setTimeout(() => floating.classList.remove('show'), 8000);
     }, 3000); // Espera 2 segundos ANTES de mostrarlo
   }
 
 
-  function showFloatingWin(msg) {
-    const floating = document.getElementById('floatingWin');
-    setTimeout(2000);
-    floating.textContent = msg;
-    floating.classList.add('show');
-    setTimeout(() => floating.classList.remove('show'), 4000);
-  }
+
 
   function getSymbolName(src) {
     return symbols.find(s => src.includes(s));
