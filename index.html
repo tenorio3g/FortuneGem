@@ -138,7 +138,7 @@
     <button onclick="startGame()">JUGAR</button>
   </div>
 
-  <h1>🎰 Fortune Gem Slot</h1>
+  <h1>🎰 Fortune Gem Tenorio</h1>
   <div id="balance">Saldo: $0</div>
 
   <div class="controls">
@@ -148,6 +148,8 @@
       <option value="2">$2</option>
       <option value="5">$5</option>
       <option value="10">$10</option>
+      <option value="15">$15</option>
+      <option value="30">$30</option>
     </select>
     <button onclick="spin()">Girar</button>
   </div>
@@ -184,12 +186,11 @@
   const symbolValues = {'symbol_1.png':2,'symbol_2.png':4,'symbol_3.png':6,'symbol_4.png':0};
   const multipliers = [1,2,3,5,10,'wheel'];
 
-  let balance = 100;
+  let balance = 500;
 
   function startGame() {
     document.getElementById('splash').style.display = 'none';
     const bgMusic = document.getElementById('bgMusic');
-    bgMusic.volume = 0.3; bgMusic.play();
     updateBalance();
   }
 
