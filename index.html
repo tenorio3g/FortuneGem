@@ -126,7 +126,7 @@
       z-index: 20;
     }
     #splash img {
-      width: 150px; margin-bottom: 20px;
+      width: 350px; margin-bottom: 20px;
     }
   </style>
 </head>
@@ -205,9 +205,10 @@
 
   function showFloatingWin(msg) {
     const floating = document.getElementById('floatingWin');
+    setTimeout((2000);
     floating.textContent = msg;
     floating.classList.add('show');
-    setTimeout(() => floating.classList.remove('show'), 2000);
+    setTimeout(() => floating.classList.remove('show'), 4000);
   }
 
   function getSymbolName(src) {
