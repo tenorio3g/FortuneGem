@@ -134,7 +134,7 @@
 
   <!-- Splash -->
   <div id="splash">
-    <img src="assets/logo_slot.png" alt="Logo Slot">
+    <img src="logo_slot.png" alt="Logo Slot">
     <button onclick="startGame()">JUGAR</button>
   </div>
 
@@ -168,7 +168,7 @@
   <div id="wheelModal">
     <div class="wheel-content">
       <div class="wheel-container">
-        <img src="assets/fortune_wheel_cropped.png" id="wheelImage">
+        <img src="wheel.png" id="wheelImage">
         <div class="pointer"></div>
       </div>
       <div id="wheelStatus">Girando...</div>
@@ -176,9 +176,9 @@
     </div>
   </div>
 
-  <audio id="spinSound" src="assets/spin.mp3"></audio>
-  <audio id="winSound" src="assets/win.mp3"></audio>
-  <audio id="wheelSound" src="assets/wheel.mp3"></audio>
+  <audio id="spinSound" src="spin.mp3"></audio>
+  <audio id="winSound" src="win.mp3"></audio>
+  <audio id="wheelSound" src="wheel.mp3"></audio>
   <audio id="bgMusic" src="background.mp3" loop></audio>
 
 <script>
@@ -237,7 +237,7 @@
       multCol.forEach(img => {
         const val = multipliers[Math.floor(Math.random()*multipliers.length)];
         img.dataset.value = val;
-        img.src = val==='wheel' ? 'assets/mult_wheel.png' : `assets/mult_${val}.png`;
+        img.src = val==='wheel' ? 'mult_wheel.png' : `mult_${val}.png`;
       });
     }, 100);
 
