@@ -194,14 +194,15 @@
     updateBalance();
   }
 
-  function updateBalance(highlight) {
-    const balanceEl = document.getElementById('balance');
-    balanceEl.textContent = `Saldo: $${balance}`;
-    if (highlight) {
-      balanceEl.style.color = '#0f0';
-      setTimeout(() => balanceEl.style.color = '#fff', 1000);
-    }
+  function showFloatingWin(msg) {
+    const floating = document.getElementById('floatingWin');
+    setTimeout(() => {
+      floating.textContent = msg;
+      floating.classList.add('show');
+      setTimeout(() => floating.classList.remove('show'), 8000);
+    }, 3000); // Espera 2 segundos ANTES de mostrarlo
   }
+
 
   function showFloatingWin(msg) {
     const floating = document.getElementById('floatingWin');
