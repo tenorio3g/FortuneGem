@@ -4,39 +4,12 @@
   <meta charset="UTF-8" />
   <title>Fortune Gem Slot</title>
   <style>
-.wheel-container {
-  position: relative;
-  width: 250px;
-  height: 250px;
-}
-
-#wheelImage {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1);
-}
-
-.pointer {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0; 
-  height: 0; 
-  border-left: 15px solid transparent;
-  border-right: 15px solid transparent;
-  border-bottom: 30px solid gold;
-}
-
-    
     body {
       background: linear-gradient(to bottom, #3a003a, #1a001a);
       font-family: sans-serif;
       color: #fff;
       text-align: center;
       padding: 30px;
-      overflow: hidden;
     }
     h1 {
       color: gold;
@@ -87,81 +60,92 @@
       0% { filter: brightness(1) drop-shadow(0 0 5px gold); transform: scale(1); }
       100% { filter: brightness(1.8) drop-shadow(0 0 15px gold); transform: scale(1.15); }
     }
-    .balance {
-      font-size: 1.5em;
-      margin: 20px 0;
-    }
-    .highlight {
-      animation: highlight 1s ease-in-out;
-    }
-    @keyframes highlight {
-      0% { color: gold; transform: scale(1); }
-      50% { color: #00ff00; transform: scale(1.3); }
-      100% { color: gold; transform: scale(1); }
-    }
     #wheelModal {
       display: none; position: fixed; top: 0; left: 0;
       width: 100%; height: 100%; background: rgba(0,0,0,0.85);
-      color: #fff; font-size: 1.5em; 
-      justify-content: center; align-items: center; z-index: 9999
+      color: #fff; font-size: 1.5em; justify-content: center;
+      align-items: center; flex-direction: column; z-index: 10;
     }
-    #wheelModal .wheel-content {
+    .wheel-content {
       background: #222; padding: 30px; border-radius: 20px;
       box-shadow: 0 0 20px gold; text-align: center;
     }
-    .wheel {
-      width: 150px; height: 150px; border: 8px solid gold;
-      border-radius: 50%; border-top: 8px solid #ff00ff;
-      animation: spin 13s ease-out forwards;
+    .wheel-container {
+      position: relative;
+      width: 250px; height: 250px; margin: 20px auto;
     }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(10020deg); }
+    #wheelImage {
+      width: 100%; height: 100%; border-radius: 50%;
+      transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1);
     }
-
+    .pointer {
+      position: absolute; top: -10px; left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-bottom: 30px solid gold;
+    }
+    .floating-win {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3em; font-weight: bold;
+      color: gold; text-shadow: 0 0 20px gold;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.5s, transform 0.5s;
+      z-index: 15;
+    }
+    .floating-win.show {
+      opacity: 1;
+      transform: translate(-50%, -60%) scale(1.2);
+    }
+    #balance {
+      margin-top: 10px;
+      font-size: 1.2em;
+      color: #0f0;
+    }
     /* Splash Screen */
-    #splashScreen {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: #000; display: flex; flex-direction: column;
-      justify-content: center; align-items: center; z-index: 9999;
+    #splash {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #000; display: flex;
+      flex-direction: column; justify-content: center; align-items: center;
+      z-index: 20;
     }
-    #splashScreen img {
-      max-width: 300px; margin-bottom: 30px;
-    }
-    #splashScreen button {
-      padding: 25px 60px; font-size: 1.5em; background: gold; color: #000;
-      border: none; border-radius: 15px; cursor: pointer;
+    #splash img {
+      width: 200px; margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
 
-  <!-- SPLASH SCREEN -->
-  <div id="splashScreen">
-    <img src="logo_slot.png" alt="Logo del juego">
-    <button onclick="startGame()">🎰 JUGAR</button>
+  <!-- Splash Screen -->
+  <div id="splash">
+    <img src="assets/logo_slot.png" alt="Logo Slot">
+    <button onclick="startGame()">JUGAR</button>
   </div>
 
-  <h1>🎰 Fortune Gem 2 por Fortunato Tenorio</h1>
-  <div class="balance">Saldo: $<span id="balance">100</span></div>
-
+  <h1>🎰 Fortune Gem Slot</h1>
+  <div id="balance">Saldo: $0</div>
   <div class="slot-machine">
     <div class="column" id="col-0"><img><img><img></div>
     <div class="column" id="col-1"><img><img><img></div>
     <div class="column" id="col-2"><img><img><img></div>
     <div class="column" id="col-mult"><img><img><img></div>
   </div>
-
   <div class="controls">
-    <button onclick="spin()">Girar ($50)</button>
+    <button onclick="spin()">Girar</button>
   </div>
-
   <div class="result" id="result">¡Buena suerte!</div>
 
-  <div id="wheelModal">
+  <!-- Floating Win -->
+  <div id="floatingWin" class="floating-win"></div>
+
+  <!-- Wheel Modal -->
+  <div id="wheelModal" style="display:none;">
     <div class="wheel-content">
       <div class="wheel-container">
-        <img src="wheel.png" id="wheelImage" class="wheel-static">
+        <img src="assets/fortune_wheel_cropped.png" id="wheelImage">
         <div class="pointer"></div>
       </div>
       <div id="wheelStatus">Girando...</div>
@@ -169,161 +153,144 @@
     </div>
   </div>
 
-  </div>
+  <!-- Sounds & Music -->
+  <audio id="spinSound" src="assets/spin.mp3"></audio>
+  <audio id="winSound" src="assets/win.mp3"></audio>
+  <audio id="wheelSound" src="assets/wheel.mp3"></audio>
+  <audio id="bgMusic" src="assets/background.mp3" loop></audio>
 
-  <!-- AUDIOS -->
-  <audio id="spinSound" src="spin.mp3"></audio>
-  <audio id="winSound" src="win.mp3"></audio>
-  <audio id="wheelSound" src="wheel.mp3"></audio>
-  <audio id="bgMusic" src="background.mp3" loop preload="auto"></audio>
+<script>
+  const symbols = ['symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png'];
+  const symbolValues = {'symbol_1.png':2,'symbol_2.png':4,'symbol_3.png':6,'symbol_4.png':0};
+  const multipliers = [1,2,3,5,10,'wheel'];
 
-  <script>
-    let balance = 1000;
-    const bet = 50;
+  let balance = 0;
+
+  function startGame() {
+    document.getElementById('splash').style.display = 'none';
+    const bgMusic = document.getElementById('bgMusic');
+    bgMusic.volume = 0.3;
+    bgMusic.play();
+  }
+
+  function updateBalance(highlight) {
     const balanceEl = document.getElementById('balance');
-
-    const symbols = ['symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png'];
-    const symbolValues = {'symbol_1.png':20,'symbol_2.png':40,'symbol_3.png':60,'symbol_4.png':100};
-    const multipliers = [1,2,3,5,10,'wheel'];
-
-    function startGame() {
-      document.getElementById('splashScreen').style.display = 'none';
-      const bgMusic = document.getElementById('bgMusic');
-      
-      bgMusic.play().catch(() => console.log('Autoplay bloqueado'));
+    balanceEl.textContent = `Saldo: $${balance}`;
+    if (highlight) {
+      balanceEl.style.color = '#0f0';
+      setTimeout(() => balanceEl.style.color = '#fff', 1000);
     }
+  }
 
-    function getSymbolName(src) {
-      return symbols.find(s => src.includes(s));
-    }
+  function showFloatingWin(msg) {
+    const floating = document.getElementById('floatingWin');
+    floating.textContent = msg;
+    floating.classList.add('show');
+    setTimeout(() => floating.classList.remove('show'), 2000);
+  }
 
-    function spin() {
-      if (balance < bet) {
-        alert('Saldo insuficiente');
-        return;
+  function getSymbolName(src) {
+    return symbols.find(s => src.includes(s));
+  }
+
+  function spin() {
+    document.getElementById('spinSound').play();
+    const cols = [0,1,2].map(i => document.querySelectorAll(`#col-${i} img`));
+    const multCol = document.querySelectorAll('#col-mult img');
+    const resultText = document.getElementById('result');
+    document.querySelectorAll('img').forEach(img => img.classList.remove('winner'));
+    resultText.textContent = 'Girando...';
+
+    let interval = setInterval(() => {
+      cols.forEach(col => {
+        const top = symbols[Math.floor(Math.random()*symbols.length)];
+        col[2].src = col[1].src; col[1].src = col[0].src; col[0].src = top;
+      });
+      multCol.forEach(img => {
+        const val = multipliers[Math.floor(Math.random()*multipliers.length)];
+        img.dataset.value = val;
+        img.src = val==='wheel' ? 'assets/mult_wheel.png' : `assets/mult_${val}.png`;
+      });
+    }, 100);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      const grid = cols.map(col => Array.from(col).map(img => getSymbolName(img.src)));
+      const multiplier = multCol[1].dataset.value;
+      let winningSymbol = null; let winningCells = [];
+      for (let row = 0; row < 3; row++) {
+        if (grid[0][row]===grid[1][row] && grid[1][row]===grid[2][row]) {
+          winningSymbol = grid[0][row];
+          winningCells.push(cols[0][row], cols[1][row], cols[2][row]);
+        }
+      }
+      if (!winningSymbol) {
+        if (grid[0][0]===grid[1][1] && grid[1][1]===grid[2][2]) {
+          winningSymbol = grid[0][0];
+          winningCells.push(cols[0][0], cols[1][1], cols[2][2]);
+        } else if (grid[0][2]===grid[1][1] && grid[1][1]===grid[2][0]) {
+          winningSymbol = grid[0][2];
+          winningCells.push(cols[0][2], cols[1][1], cols[2][0]);
+        }
+      }
+      if (winningSymbol) {
+        winningCells.forEach(img => img.classList.add('winner'));
+        multCol[1].classList.add('winner');
+        document.getElementById('winSound').play();
       }
 
-      balance -= bet;
-      updateBalance();
+      if (multiplier === 'wheel') {
+        multCol[1].classList.add('winner');
+        setTimeout(() => {
+          openWheelModal(resultText, winningSymbol ? symbolValues[winningSymbol] : 0);
+        }, 2000);
+      } else {
+        const multNum = parseInt(multiplier)||1;
+        if (winningSymbol) {
+          const base = symbolValues[winningSymbol];
+          const prize = base * multNum;
+          balance += prize;
+          updateBalance(true);
+          resultText.textContent = `🎉 ¡Ganaste!: $${base} x${multNum} = $${prize}`;
+          showFloatingWin(`+$${prize}`);
+        } else resultText.textContent = 'Intenta de nuevo';
+      }
+    }, 2000);
+  }
 
-      const spinSound = document.getElementById('spinSound');
-      spinSound.currentTime = 0; spinSound.play();
+  function openWheelModal(resultText, basePrize) {
+    document.getElementById('wheelSound').play();
+    const modal = document.getElementById('wheelModal');
+    const wheelStatus = document.getElementById('wheelStatus');
+    const wheelResult = document.getElementById('wheelResult');
+    const wheelImage = document.getElementById('wheelImage');
+    const bonusOptions = [5,10,15,20,50];
+    const degreesPerSlice = 360 / bonusOptions.length;
 
-      const cols = [0,1,2].map(i => document.querySelectorAll(`#col-${i} img`));
-      const multCol = document.querySelectorAll('#col-mult img');
-      const resultText = document.getElementById('result');
+    modal.style.display = 'flex';
+    wheelStatus.textContent = '🎡 Preparando ruleta...';
+    wheelResult.textContent = '';
 
-      document.querySelectorAll('img').forEach(img => img.classList.remove('winner'));
-      resultText.textContent = 'Girando...';
+    setTimeout(() => {
+      const prizeIndex = Math.floor(Math.random() * bonusOptions.length);
+      const prize = bonusOptions[prizeIndex];
+      const extraSpins = 5;
+      const angle = 360 * extraSpins + (prizeIndex * degreesPerSlice) + degreesPerSlice/2;
 
-      let interval = setInterval(() => {
-        cols.forEach(col => {
-          const top = symbols[Math.floor(Math.random()*symbols.length)];
-          col[2].src = col[1].src; col[1].src = col[0].src; col[0].src = top;
-        });
-        multCol.forEach(img => {
-          const val = multipliers[Math.floor(Math.random()*multipliers.length)];
-          img.dataset.value = val;
-          img.src = val==='wheel' ? 'mult_wheel.png' : `mult_${val}.png`;
-        });
-      }, 100);
+      wheelImage.style.transform = `rotate(${angle}deg)`;
 
       setTimeout(() => {
-        clearInterval(interval);
-        const grid = cols.map(col => Array.from(col).map(img => getSymbolName(img.src)));
-        const multiplier = multCol[1].dataset.value;
-
-        let winningSymbol = null; let winningCells = [];
-
-        for (let row = 0; row < 3; row++) {
-          if (grid[0][row]===grid[1][row] && grid[1][row]===grid[2][row]) {
-            winningSymbol = grid[0][row];
-            winningCells.push(cols[0][row], cols[1][row], cols[2][row]);
-          }
-        }
-
-        if (!winningSymbol) {
-          if (grid[0][0]===grid[1][1] && grid[1][1]===grid[2][2]) {
-            winningSymbol = grid[0][0];
-            winningCells.push(cols[0][0], cols[1][1], cols[2][2]);
-          } else if (grid[0][2]===grid[1][1] && grid[1][1]===grid[2][0]) {
-            winningSymbol = grid[0][2];
-            winningCells.push(cols[0][2], cols[1][1], cols[2][0]);
-          }
-        }
-
-        if (winningSymbol) {
-          winningCells.forEach(img => img.classList.add('winner'));
-          multCol[1].classList.add('winner');
-          document.getElementById('winSound').play();
-        }
-
-        if (multiplier === 'wheel') {
-          multCol[1].classList.add('winner');
-          document.getElementById('wheelSound').play();
-          let basePrize = winningSymbol && !winningSymbol.includes('symbol_4') ? symbolValues[winningSymbol] : 0;
-          openWheelModal(resultText, basePrize);
-        } else {
-          const multNum = parseInt(multiplier) || 1;
-          if (winningSymbol) {
-            const base = symbolValues[winningSymbol];
-            const prize = base * multNum;
-            balance += prize;
-            updateBalance(true);
-            resultText.textContent = `🎉 ¡Ganaste! Base: $${base} x${multNum} = $${prize}`;
-          } else {
-            resultText.textContent = 'Intenta de nuevo';
-          }
-        }
-      }, 2000);
-    }
-
-function openWheelModal(resultText, basePrize) {
-  const modal = document.getElementById('wheelModal');
-  const wheelStatus = document.getElementById('wheelStatus');
-  const wheelResult = document.getElementById('wheelResult');
-  const wheelImage = document.getElementById('wheelImage');
-
-  const bonusOptions = [5,10,15,20,50];
-  const degreesPerSlice = 360 / bonusOptions.length;
-
-  modal.style.display = 'flex';
-  wheelStatus.textContent = '🎡 Preparando ruleta...';
-  wheelResult.textContent = '';
-
-  // Espera 2 segundos para mostrar la ruleta girando:
-  setTimeout(() => {
-    // Elegir premio al azar
-    const prizeIndex = Math.floor(Math.random() * bonusOptions.length);
-    const prize = bonusOptions[prizeIndex];
-    const extraSpins = 5; // vueltas extras para que se vea pro
-
-    // Calcular rotación final
-    const angle = 360 * extraSpins + (prizeIndex * degreesPerSlice) + degreesPerSlice/2;
-
-    wheelImage.style.transform = `rotate(${angle}deg)`;
-
-    // Mostrar resultado después de que termine de girar (~5s)
-    setTimeout(() => {
-      wheelStatus.textContent = '🎉 Resultado:';
-      wheelResult.textContent = `$${prize}`;
-      const total = basePrize + prize;
-      balance += total;
-      updateBalance(true);
-      resultText.textContent = `🎡 Wheel Bonus: Base $${basePrize} + Ruleta $${prize} = Total $${total}`;
-      setTimeout(() => modal.style.display = 'none', 2000);
-    }, 5000);
-
-  }, 2000); // Espera antes de girar
-}
-
-    function updateBalance(highlight = false) {
-      balanceEl.textContent = balance;
-      if (highlight) {
-        balanceEl.classList.add('highlight');
-        setTimeout(() => balanceEl.classList.remove('highlight'), 1000);
-      }
-    }
-  </script>
+        wheelStatus.textContent = '🎉 Resultado:';
+        wheelResult.textContent = `$${prize}`;
+        const total = basePrize + prize;
+        balance += total;
+        updateBalance(true);
+        resultText.textContent = `🎡 Wheel Bonus: Base $${basePrize} + Ruleta $${prize} = Total $${total}`;
+        showFloatingWin(`+$${total}`);
+        setTimeout(() => modal.style.display = 'none', 2000);
+      }, 5000);
+    }, 2000);
+  }
+</script>
 </body>
 </html>
