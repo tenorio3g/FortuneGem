@@ -148,6 +148,7 @@
       <option value="2">$2</option>
       <option value="5">$5</option>
       <option value="10">$10</option>
+      <option value="100">$100</option>
     </select>
     <button onclick="spin()">Girar</button>
   </div>
@@ -181,7 +182,7 @@
 
 <script>
   const symbols = ['symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png'];
-  const symbolValues = {'symbol_1.png':2,'symbol_2.png':4,'symbol_3.png':6,'symbol_4.png':0};
+  const symbolValues = {'symbol_1.png':2,'symbol_2.png':4,'symbol_3.png':6,'symbol_4.png':10};
   const multipliers = [1,2,3,5,10,'wheel'];
 
   let balance = 100;
@@ -189,7 +190,7 @@
   function startGame() {
     document.getElementById('splash').style.display = 'none';
     const bgMusic = document.getElementById('bgMusic');
-    bgMusic.volume = 90.3; bgMusic.play();
+    bgMusic.play();
     updateBalance();
   }
 
