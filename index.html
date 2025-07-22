@@ -150,6 +150,7 @@
       <option value="10">$10</option>
       <option value="100">$100</option>
       <option value="1000">$1000</option>
+      <option value="10000">$10000</option>
     </select>
     <button onclick="spin()">Girar</button>
   </div>
@@ -295,7 +296,7 @@
     const wheelStatus = document.getElementById('wheelStatus');
     const wheelResult = document.getElementById('wheelResult');
     const wheelImage = document.getElementById('wheelImage');
-    const bonusOptions = [5,10,15,20,50];
+    const bonusOptions = [5,10,15,20,500,25000,10000,500,100,10000000];
     const degreesPerSlice = 360 / bonusOptions.length;
 
     modal.style.display = 'flex';
