@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Fortune Gem Por Fortunato Tenorio</title>
+  <title>Fortune Gem Slot</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
     body {
@@ -11,7 +11,6 @@
       color: #fff;
       text-align: center;
       padding: 20px;
-      overflow: hidden;
     }
     h1 {
       color: gold;
@@ -129,24 +128,6 @@
     #splash img {
       width: 150px; margin-bottom: 20px;
     }
-    #destroyScreen {
-      display: none; position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: black; color: red;
-      font-size: 2em; justify-content: center;
-      align-items: center; text-align: center;
-      z-index: 50; flex-direction: column;
-    }
-    @keyframes shake {
-      0% { transform: translate(0, 0); }
-      25% { transform: translate(10px, 0); }
-      50% { transform: translate(-10px, 0); }
-      75% { transform: translate(10px, 0); }
-      100% { transform: translate(0, 0); }
-    }
-    .shake {
-      animation: shake 0.5s infinite;
-    }
   </style>
 </head>
 <body>
@@ -167,9 +148,6 @@
       <option value="2">$2</option>
       <option value="5">$5</option>
       <option value="10">$10</option>
-      <option value="100">$100</option>
-      <option value="1000">$1000</option>
-      <option value="10000">$10000</option>
     </select>
     <button onclick="spin()">Girar</button>
   </div>
@@ -196,20 +174,15 @@
     </div>
   </div>
 
-  <div id="destroyScreen">
-    💥🔥 ¡Lo sentimos! Se quemó todo el dinero, ahora no tenemos nada y ahora nos debes dinero por hacer que se queme mi computadora 🔥💥
-  </div>
-
   <audio id="spinSound" src="spin.mp3"></audio>
   <audio id="winSound" src="win.mp3"></audio>
   <audio id="wheelSound" src="wheel.mp3"></audio>
   <audio id="bgMusic" src="background.mp3" loop></audio>
-  <audio id="explosionSound" src="explosion.mp3"></audio>
 
 <script>
   const symbols = ['symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png','symbol_5.png','symbol_6.png','symbol_7.png','symbol_8.png'];
   const symbolValues = {'symbol_1.png':1,'symbol_2.png':4,'symbol_3.png':6,'symbol_4.png':10,'symbol_5.png':0.80,'symbol_6.png':1.20,'symbol_7.png':1,'symbol_8.png':5};
-  const multipliers = [1,'wheel'];
+  const multipliers = [1,2,3,5,10,1,2,1,1,2,1,2,1,2,'wheel'];
 
   let balance = 100;
 
@@ -217,7 +190,26 @@
     document.getElementById('splash').style.display = 'none';
     const bgMusic = document.getElementById('bgMusic');
     bgMusic.play();
+    fillInitialSlots();
     updateBalance();
+  }
+
+  function fillInitialSlots() {
+    const cols = [0,1,2].map(i => document.querySelectorAll(`#col-${i} img`));
+    const multCol = document.querySelectorAll('#col-mult img');
+
+    cols.forEach((col, colIdx) => {
+      col.forEach((img, rowIdx) => {
+        const index = (colIdx + rowIdx) % symbols.length;
+        img.src = symbols[index];
+      });
+    });
+
+    multCol.forEach((img, idx) => {
+      const val = multipliers[idx % multipliers.length];
+      img.dataset.value = val;
+      img.src = val==='wheel' ? 'mult_wheel.png' : `mult_${val}.png`;
+    });
   }
 
   function updateBalance(highlight) {
@@ -240,6 +232,10 @@
 
   function getSymbolName(src) {
     return symbols.find(s => src.includes(s));
+  }
+
+  function symbolsMatch(a, b) {
+    return a === b || a === 'symbol_8.png' || b === 'symbol_8.png';
   }
 
   function spin() {
@@ -274,21 +270,26 @@
       const grid = cols.map(col => Array.from(col).map(img => getSymbolName(img.src)));
       const multiplier = multCol[1].dataset.value;
       let winningSymbol = null; let winningCells = [];
+
       for (let row = 0; row < 3; row++) {
-        if (grid[0][row]===grid[1][row] && grid[1][row]===grid[2][row]) {
-          winningSymbol = grid[0][row];
+        const s1 = grid[0][row], s2 = grid[1][row], s3 = grid[2][row];
+        if (symbolsMatch(s1, s2) && symbolsMatch(s2, s3)) {
+          winningSymbol = [s1, s2, s3].find(s => s !== 'symbol_8.png') || 'symbol_8.png';
           winningCells.push(cols[0][row], cols[1][row], cols[2][row]);
         }
       }
+
       if (!winningSymbol) {
-        if (grid[0][0]===grid[1][1] && grid[1][1]===grid[2][2]) {
-          winningSymbol = grid[0][0];
+        if (symbolsMatch(grid[0][0], grid[1][1]) && symbolsMatch(grid[1][1], grid[2][2])) {
+          winningSymbol = [grid[0][0], grid[1][1], grid[2][2]].find(s => s !== 'symbol_8.png') || 'symbol_8.png';
           winningCells.push(cols[0][0], cols[1][1], cols[2][2]);
-        } else if (grid[0][2]===grid[1][1] && grid[1][1]===grid[2][0]) {
-          winningSymbol = grid[0][2];
+        } else if (symbolsMatch(grid[0][2], grid[1][1]) && symbolsMatch(grid[1][1], grid[2][0])) {
+          winningSymbol = [grid[0][2], grid[1][1], grid[2][0]].find(s => s !== 'symbol_8.png') || 'symbol_8.png';
           winningCells.push(cols[0][2], cols[1][1], cols[2][0]);
         }
       }
+
+
       if (winningSymbol) {
         winningCells.forEach(img => img.classList.add('winner'));
         multCol[1].classList.add('winner');
@@ -298,10 +299,10 @@
       if (multiplier === 'wheel') {
         multCol[1].classList.add('winner');
         setTimeout(() => {
-          openWheelModal(resultText, winningSymbol ? symbolValues[winningSymbol]*bet : 0);
+          openWheelModal(resultText, winningSymbol ? symbolValues[winningSymbol] * bet : 0);
         }, 2000);
       } else {
-        const multNum = parseInt(multiplier)||1;
+        const multNum = parseInt(multiplier) || 1;
         if (winningSymbol) {
           const base = symbolValues[winningSymbol] * bet;
           const prize = base * multNum;
@@ -309,7 +310,9 @@
           updateBalance(true);
           resultText.textContent = `🎉 ¡Ganaste!: $${base} x${multNum} = $${prize}`;
           showFloatingWin(`+$${prize}`);
-        } else resultText.textContent = 'Intenta de nuevo';
+        } else {
+          resultText.textContent = 'Intenta de nuevo';
+        }
       }
     }, 2000);
   }
@@ -320,7 +323,7 @@
     const wheelStatus = document.getElementById('wheelStatus');
     const wheelResult = document.getElementById('wheelResult');
     const wheelImage = document.getElementById('wheelImage');
-    const bonusOptions = [5,1000000];
+    const bonusOptions = [5, 10, 15, 20, 500, 25000, 10000, 500, 100, 1000000];
     const degreesPerSlice = 360 / bonusOptions.length;
 
     modal.style.display = 'flex';
@@ -331,7 +334,7 @@
       const prizeIndex = Math.floor(Math.random() * bonusOptions.length);
       const prize = bonusOptions[prizeIndex];
       const extraSpins = 5;
-      const angle = 360 * extraSpins + (prizeIndex * degreesPerSlice) + degreesPerSlice/2;
+      const angle = 360 * extraSpins + (prizeIndex * degreesPerSlice) + degreesPerSlice / 2;
 
       wheelImage.style.transform = `rotate(${angle}deg)`;
 
@@ -339,14 +342,9 @@
         wheelStatus.textContent = '🎉 Resultado:';
         wheelResult.textContent = `$${prize}`;
 
-        if (prize >= 1000000) {
-          // EFECTO DE DESTRUCCIÓN
-          balance = 0; updateBalance();
-          document.getElementById('explosionSound').play();
-          document.body.classList.add('shake');
-          setTimeout(() => {
-            document.getElementById('destroyScreen').style.display = 'flex';
-          }, 3000);
+        if (prize === 1000000) {
+          // ⚠️ BROMA: Explosión del juego si es el premio máximo
+          document.body.innerHTML = '<h1 style="color:red;font-size:3em;">💥 ¡Se quemó todo! El dinero explotó 🔥</h1>';
         } else {
           const total = basePrize + prize;
           balance += total;
@@ -359,5 +357,7 @@
     }, 2000);
   }
 </script>
+
 </body>
 </html>
+
