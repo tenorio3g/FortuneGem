@@ -11,6 +11,7 @@
       color: #fff;
       text-align: center;
       padding: 20px;
+      overflow: hidden;
     }
     h1 {
       color: gold;
@@ -71,7 +72,8 @@
       100% { filter: brightness(1.8) drop-shadow(0 0 15px gold); transform: scale(1.1); }
     }
     .floating-win {
-      position: fixed; top: 50%; left: 50%;
+      position: fixed;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       font-size: 2.5em; font-weight: bold;
       color: gold; text-shadow: 2px 2px 5px black, 0 0 15px gold;
@@ -91,9 +93,44 @@
       font-size: 1.2em;
       color: #0f0;
     }
+
+    /* Pantalla de carga */
+    #pantallaCarga {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: #1a001a;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 9999;
+    }
+    #barraContainer {
+      width: 300px;
+      height: 20px;
+      background: #444;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    #barraCarga {
+      width: 0%;
+      height: 100%;
+      background: gold;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
   </style>
 </head>
 <body>
+
+  <div id="pantallaCarga">
+    <h2>Cargando Fortune Gem Slot...</h2>
+    <div id="barraContainer"><div id="barraCarga"></div></div>
+    <p>Espere un momento...</p>
+  </div>
 
   <h1>🎰 Fortune Gem Slot</h1>
   <div id="balance">Saldo: $100</div>
@@ -125,29 +162,15 @@
 <script>
   const symbols = [
     'symbol_1.png', 'symbol_2.png', 'symbol_3.png', 'symbol_4.png',
-    'symbol_5.png', 'symbol_6.png', 'symbol_7.png', 'symbol_8.png' // comodín
+    'symbol_5.png', 'symbol_6.png', 'symbol_7.png', 'symbol_8.png'
   ];
   const symbolValues = {
     'symbol_1.png':1, 'symbol_2.png':2, 'symbol_3.png':3,
     'symbol_4.png':4, 'symbol_5.png':5, 'symbol_6.png':6,
-    'symbol_7.png':7, 'symbol_8.png':1 // comodín valor base
+    'symbol_7.png':7, 'symbol_8.png':1
   };
   const multipliers = [1, 2, 3, 5, 'wheel'];
-
   let balance = 100;
-
-  // Mostrar imágenes iniciales ordenadas
-  window.onload = () => {
-    const cols = [0,1,2].map(i => document.querySelectorAll(`#col-${i} img`));
-    cols.forEach((col, colIdx) => {
-      col.forEach((img, rowIdx) => {
-        img.src = symbols[(colIdx + rowIdx) % symbols.length];
-      });
-    });
-    const multCol = document.querySelectorAll('#col-mult img');
-    multCol.forEach(img => img.src = `mult_1.png`);
-    updateBalance();
-  };
 
   function updateBalance(highlight) {
     const el = document.getElementById('balance');
@@ -171,7 +194,6 @@
     const line = [a,b,c];
     const nonWilds = line.filter(s => s !== 'symbol_8.png');
     const wilds = line.filter(s => s === 'symbol_8.png').length;
-
     if (wilds === 3) return 'symbol_8.png'; 
     if (wilds === 2 && nonWilds.length === 1) return nonWilds[0]; 
     if (wilds === 1 && nonWilds.length === 2 && nonWilds[0] === nonWilds[1]) return nonWilds[0];
@@ -252,6 +274,43 @@
       }
     }, 2000);
   }
+
+  // Precarga y splash screen
+  function precargarImagenes(urls, callback) {
+    let cargadas = 0;
+    urls.forEach(url => {
+      const img = new Image();
+      img.src = url;
+      img.onload = () => {
+        cargadas++;
+        let progreso = (cargadas / urls.length) * 100;
+        document.getElementById("barraCarga").style.width = progreso + "%";
+        if (cargadas === urls.length) callback();
+      };
+    });
+  }
+
+  window.addEventListener('load', () => {
+    const imagenes = [
+      'symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png',
+      'symbol_5.png','symbol_6.png','symbol_7.png','symbol_8.png',
+      'mult_1.png','mult_2.png','mult_3.png','mult_5.png','mult_wheel.png'
+    ];
+    precargarImagenes(imagenes, () => {
+      document.getElementById("pantallaCarga").style.display = "none";
+      document.body.style.overflow = "auto";
+
+      const cols = [0,1,2].map(i => document.querySelectorAll(`#col-${i} img`));
+      cols.forEach((col, colIdx) => {
+        col.forEach((img, rowIdx) => {
+          img.src = symbols[(colIdx + rowIdx) % symbols.length];
+        });
+      });
+      const multCol = document.querySelectorAll('#col-mult img');
+      multCol.forEach(img => img.src = `mult_1.png`);
+      updateBalance();
+    });
+  });
 </script>
 
 </body>
