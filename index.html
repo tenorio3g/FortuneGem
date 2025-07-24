@@ -119,13 +119,16 @@
       font-size: 1.2em;
       color: #0f0;
     }
+
     #splash {
-      position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: #000; display: flex;
-      flex-direction: column; justify-content: center; align-items: center;
-      z-index: 20;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #000; display: flex; justify-content: center; align-items: center;
+    flex-direction: column; z-index: 20;
+    color: white;
     }
+
+
+    
     #splash img {
       width: 150px; margin-bottom: 20px;
     }
@@ -147,15 +150,24 @@
     .shake {
       animation: shake 0.5s infinite;
     }
+
+    
   </style>
 </head>
 <body>
 
   <!-- Splash -->
-  <div id="splash">
-    <img src="logo_slot.png" alt="Logo Slot">
+<!-- Pantalla splash -->
+<div id="splash">
+  <div id="preloader">
+    <p style="font-size: 1.5em; color: gold;">🔄 Cargando...</p>
+  </div>
+  <div id="startButton" style="display: none; flex-direction: column; align-items: center;">
+    <img src="logo_slot.png" alt="Logo Slot" style="width: 150px; margin-bottom: 20px;">
     <button onclick="startGame()">JUGAR</button>
   </div>
+</div>
+
 
   <h1>🎰 Fortune Gem Slot</h1>
   <div id="balance">Saldo: $100</div>
@@ -207,6 +219,70 @@
   <audio id="explosionSound" src="explosion.mp3"></audio>
 
 <script>
+
+
+
+// Lista de imágenes a precargar
+const assets = [
+  'symbol_1.png',
+  'symbol_2.png',
+  'symbol_3.png',
+  'symbol_4.png',
+  'symbol_5.png',
+  'symbol_6.png',
+  'symbol_7.png',
+  'symbol_8.png',
+  'mult_1.png',
+  'mult_2.png',
+  'mult_3.png',
+  'mult_5.png',
+  'mult_10.png',
+  'mult_wheel.png',
+  'logo_slot.png',
+  'wheel.png'
+];
+
+let loaded = 0;
+
+assets.forEach(src => {
+  const img = new Image();
+  img.onload = () => {
+    loaded++;
+    // Si quieres mostrar progreso:
+    document.getElementById('preloader').innerHTML = `🔄 Cargando... ${Math.floor((loaded/assets.length)*100)}%`;
+    if (loaded === assets.length) {
+      showStartButton();
+    }
+  };
+  img.src = src;
+});
+
+function showStartButton() {
+  document.getElementById('preloader').style.display = 'none';
+  document.getElementById('startButton').style.display = 'flex';
+}
+
+function startGame() {
+  document.getElementById('splash').style.display = 'none';
+  const bgMusic = document.getElementById('bgMusic');
+  bgMusic.play();
+  updateBalance();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   const symbols = ['symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png','symbol_5.png','symbol_6.png','symbol_7.png','symbol_8.png'];
   const symbolValues = {'symbol_1.png':1,'symbol_2.png':4,'symbol_3.png':6,'symbol_4.png':10,'symbol_5.png':0.80,'symbol_6.png':1.20,'symbol_7.png':1,'symbol_8.png':5};
   const multipliers = [1,2,3,'wheel'];
