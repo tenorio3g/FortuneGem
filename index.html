@@ -12,10 +12,7 @@
       text-align: center;
       padding: 20px;
     }
-    h1 {
-      color: gold;
-      text-shadow: 2px 2px 5px #000;
-    }
+    h1 { color: gold; text-shadow: 2px 2px 5px #000; }
     .slot-machine {
       display: flex;
       justify-content: center;
@@ -23,65 +20,45 @@
       margin: 20px auto;
       max-width: 100%;
     }
-    .column {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
+    .column { display: flex; flex-direction: column; gap: 5px; }
     .column img {
-      width: 60px;
-      height: 60px;
-      object-fit: contain;
-      border-radius: 8px;
-      background: #222;
-      box-shadow: 0 0 10px #ff00ff;
+      width: 60px; height: 60px;
+      object-fit: contain; border-radius: 8px;
+      background: #222; box-shadow: 0 0 10px #ff00ff;
     }
-    .controls {
-      margin-top: 15px;
-    }
+    .controls { margin-top: 15px; }
     button {
-      padding: 10px 20px;
-      font-size: 1em;
-      border: none;
-      background: gold;
-      color: black;
-      border-radius: 10px;
+      padding: 10px 20px; font-size: 1em; border: none;
+      background: gold; color: black; border-radius: 10px;
       cursor: pointer;
     }
-    button:hover {
-      background: #ffcc00;
-    }
     select {
-      padding: 8px;
-      font-size: 1em;
-      border-radius: 5px;
-      border: none;
-      margin-left: 10px;
+      padding: 8px; font-size: 1em; border-radius: 5px;
+      border: none; margin-left: 10px;
     }
-    .result {
-      margin-top: 15px;
-      font-size: 1.2em;
-    }
-    .winner {
-      animation: shine 0.8s infinite alternate;
-    }
+    .winner { animation: shine 0.8s infinite alternate; }
     @keyframes shine {
       0% { filter: brightness(1) drop-shadow(0 0 5px gold); transform: scale(1); }
       100% { filter: brightness(1.8) drop-shadow(0 0 15px gold); transform: scale(1.1); }
     }
+    #result { margin-top: 15px; font-size: 1.2em; }
     #splash {
-      position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: #000; display: flex;
-      flex-direction: column; justify-content: center; align-items: center;
-      z-index: 20;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; z-index: 10;
       color: gold;
     }
+    #balance { margin-top: 10px; font-size: 1.2em; color: #0f0; }
   </style>
 </head>
-<body>
 
-  <div id="splash"></div>
+<body>
+  <!-- Splash -->
+  <div id="splash">
+    <h1>Fortune Gem Slot</h1>
+    <p id="loadingText">Cargando recursos...</p>
+    <button id="startBtn" style="display:none;" onclick="startGame()">INICIAR</button>
+  </div>
 
   <h1>🎰 Fortune Gem Slot</h1>
   <div id="balance">Saldo: $100</div>
@@ -90,76 +67,91 @@
     Apuesta:
     <select id="betAmount">
       <option value="1">$1</option>
-      <option value="2">$2</option>
       <option value="5">$5</option>
+      <option value="10">$10</option>
     </select>
-    <button onclick="spin()">Girar</button>
+    <button onclick="spin()">GIRAR</button>
   </div>
 
   <div class="slot-machine">
     <div class="column" id="col-0"><img><img><img></div>
     <div class="column" id="col-1"><img><img><img></div>
     <div class="column" id="col-2"><img><img><img></div>
+    <div class="column" id="col-mult"><img><img><img></div>
   </div>
 
-  <div class="result" id="result">¡Buena suerte!</div>
+  <div id="result">¡Buena suerte!</div>
 
   <audio id="bgMusic" src="background.mp3" loop></audio>
 
   <script>
-    const symbols = ['symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png','symbol_5.png','symbol_6.png','symbol_7.png','symbol_8.png'];
+    const symbols = ['symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png','symbol_8.png'];
+    const symbolValues = {'symbol_1.png': 1, 'symbol_2.png': 4, 'symbol_3.png': 6, 'symbol_4.png': 10, 'symbol_8.png': 0};
+    const multipliers = [1, 2, 3, 'wheel'];
     let balance = 100;
 
-    function preloadImages() {
-      const promises = symbols.map(src => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = resolve;
-          img.onerror = reject;
-          img.src = src;
-        });
-      });
-      return Promise.all(promises);
-    }
-
-    window.addEventListener('load', () => {
-      const splash = document.getElementById('splash');
-      const splashText = document.createElement('p');
-      splashText.textContent = 'Cargando recursos...';
-      splash.appendChild(splashText);
-
-      preloadImages().then(() => {
-        splashText.textContent = '';
-        const btn = document.createElement('button');
-        btn.textContent = 'Iniciar Juego';
-        btn.onclick = startGame;
-        splash.appendChild(btn);
-      });
+    // Precargar imágenes
+    const preloadImages = [];
+    let loaded = 0;
+    symbols.forEach(src => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        loaded++;
+        if (loaded === symbols.length) {
+          document.getElementById('loadingText').textContent = '¡Listo!';
+          document.getElementById('startBtn').style.display = 'inline-block';
+          renderInitialGrid();
+        }
+      };
+      preloadImages.push(img);
     });
+
+    function renderInitialGrid() {
+      [0, 1, 2].forEach(col => {
+        const imgs = document.querySelectorAll(`#col-${col} img`);
+        imgs[0].src = symbols[0];
+        imgs[1].src = symbols[1];
+        imgs[2].src = symbols[2];
+      });
+      const mults = document.querySelectorAll('#col-mult img');
+      mults.forEach(img => {
+        img.src = `mult_${multipliers[0]}.png`;
+      });
+    }
 
     function startGame() {
       document.getElementById('splash').style.display = 'none';
       document.getElementById('bgMusic').play();
-      updateBalance();
-      showInitialGrid();
-    }
-
-    function updateBalance() {
-      document.getElementById('balance').textContent = `Saldo: $${balance}`;
-    }
-
-    function showInitialGrid() {
-      [0,1,2].forEach(i => {
-        document.querySelectorAll(`#col-${i} img`).forEach((img, idx) => {
-          img.src = symbols[(i+idx)%symbols.length];
-        });
-      });
     }
 
     function spin() {
-      balance -= parseInt(document.getElementById('betAmount').value);
-      updateBalance();
-      document.getElementById('result').textContent = 'Girando...';
+      const bet = parseInt(document.getElementById('betAmount').value);
+      if (balance < bet) { alert('Sin saldo'); return; }
+      balance -= bet; document.getElementById('balance').textContent = `Saldo: $${balance}`;
+
+      const cols = [0,1,2].map(i => document.querySelectorAll(`#col-${i} img`));
+      const multCol = document.querySelectorAll('#col-mult img');
+      let interval = setInterval(() => {
+        cols.forEach(col => {
+          const top = symbols[Math.floor(Math.random() * symbols.length)];
+          col[2].src = col[1].src;
+          col[1].src = col[0].src;
+          col[0].src = top;
+        });
+        multCol.forEach(img => {
+          const val = multipliers[Math.floor(Math.random() * multipliers.length)];
+          img.dataset.value = val;
+          img.src = val === 'wheel' ? 'mult_wheel.png' : `mult_${val}.png`;
+        });
+      }, 100);
+
+      setTimeout(() => {
+        clearInterval(interval);
+        const grid = cols.map(col => Array.from(col).map(img => img.src.split('/').pop()));
+        console.log(grid);
+        document.getElementById('result').textContent = '¡Resultado calculado!';
+      }, 2000);
     }
   </script>
 </body>
