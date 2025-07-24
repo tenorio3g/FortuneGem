@@ -281,12 +281,21 @@ function isWinningLine(s1, s2, s3) {
   const nonWild = line.filter(s => s !== 'symbol_8.png');
   const wilds = line.filter(s => s === 'symbol_8.png').length;
 
-  if (nonWild.length === 0) return false; // Solo comodines no cuenta
-  const main = nonWild[0];
-  const allMatch = nonWild.every(s => s === main);
+  // Si son 3 comodines, gana
+  if (nonWild.length === 0 && wilds === 3) return 'symbol_8.png';
 
-  return allMatch && (wilds + nonWild.length >= 3) ? main : false;
+  // Si son 3 iguales sin comodín, gana
+  if (nonWild.length === 3 && new Set(nonWild).size === 1) return nonWild[0];
+
+  // Si es 1 símbolo real + 2 comodines, gana
+  if (nonWild.length === 1 && wilds === 2) return nonWild[0];
+
+  // Si es 2 iguales + 1 comodín, gana
+  if (nonWild.length === 2 && new Set(nonWild).size === 1 && wilds === 1) return nonWild[0];
+
+  return false;
 }
+
 
 // Revisa filas
 for (let row = 0; row < 3; row++) {
