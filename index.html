@@ -162,142 +162,198 @@
   const symbols = [
     'symbol_1.png','symbol_2.png','symbol_3.png',
     'symbol_4.png','symbol_5.png','symbol_6.png',
-    'symbol_7.png','symbol_8.png' // comodín
+    'symbol_7.png','symbol_8.png' // este es el comodín
   ];
+
   const symbolValues = {
-    'symbol_1.png': 1, 'symbol_2.png': 2,
-    'symbol_3.png': 3, 'symbol_4.png': 5,
-    'symbol_5.png': 0.8, 'symbol_6.png': 1.2,
-    'symbol_7.png': 1, 'symbol_8.png': 1  // comodín
+    'symbol_1.png': 1,
+    'symbol_2.png': 4,
+    'symbol_3.png': 6,
+    'symbol_4.png': 10,
+    'symbol_5.png': 0.80,
+    'symbol_6.png': 1.20,
+    'symbol_7.png': 1,
+    'symbol_8.png': 0 // comodín sin valor propio
   };
-  const multipliers = [1, 2, 5, 'wheel'];
+
+  const multipliers = [1, 2, 3, 5, 10, 'wheel'];
+
   let balance = 100;
 
-  const imagesToLoad = symbols.concat([
-    'mult_1.png','mult_2.png','mult_5.png',
-    'mult_wheel.png','wheel.png'
-  ]);
-  const soundsToLoad = ['spin.mp3','win.mp3','background.mp3'];
-
-  let loaded = 0, total = imagesToLoad.length + soundsToLoad.length;
-  const progress = document.getElementById('progress');
-
-  imagesToLoad.forEach(src => { const img = new Image(); img.src = src; img.onload = checkProgress; img.onerror = checkProgress; });
-  soundsToLoad.forEach(src => { const audio = new Audio(); audio.src = src; audio.oncanplaythrough = checkProgress; audio.onerror = checkProgress; });
-
-  function checkProgress() {
-    loaded++;
-    progress.textContent = Math.floor(loaded/total*100) + '%';
-    if (loaded >= total) document.getElementById('startBtn').style.display = 'inline-block';
+  function preloadImages() {
+    symbols.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
   }
 
-  document.getElementById('startBtn').onclick = () => {
-    document.getElementById('preloader').style.display = 'none';
+  function startGame() {
+    document.getElementById('splash').style.display = 'none';
     document.getElementById('bgMusic').play();
-    setupInitial();
     updateBalance();
-  };
+    preloadImages();
+    showInitialGrid();
+  }
 
-  function setupInitial() {
-    [0,1,2].forEach(i => {
-      const col = document.getElementById(`col-${i}`);
-      for (let j = 0; j < 3; j++) {
-        const img = document.createElement('img');
-        img.src = symbols[(i+j)%symbols.length];
-        col.appendChild(img);
-      }
-    });
-    const multCol = document.getElementById('col-mult');
-    for (let j = 0; j < 3; j++) {
-      const img = document.createElement('img');
-      img.src = `mult_1.png`; img.dataset.value = 1;
-      multCol.appendChild(img);
+  function updateBalance(highlight) {
+    const balanceEl = document.getElementById('balance');
+    balanceEl.textContent = `Saldo: $${balance}`;
+    if (highlight) {
+      balanceEl.style.color = '#0f0';
+      setTimeout(() => balanceEl.style.color = '#fff', 1000);
     }
   }
 
-  function updateBalance() {
-    document.getElementById('balance').textContent = `Saldo: $${balance}`;
+  function showInitialGrid() {
+    for (let c = 0; c < 3; c++) {
+      const col = document.querySelectorAll(`#col-${c} img`);
+      for (let i = 0; i < 3; i++) {
+        col[i].src = symbols[(c + i) % symbols.length];
+      }
+    }
+    const multCol = document.querySelectorAll('#col-mult img');
+    for (let i = 0; i < 3; i++) {
+      multCol[i].src = 'mult_1.png';
+    }
+  }
+
+  function showFloatingWin(msg) {
+    const floating = document.getElementById('floatingWin');
+    setTimeout(() => {
+      floating.textContent = msg;
+      floating.classList.add('show');
+      setTimeout(() => floating.classList.remove('show'), 4000);
+    }, 2000);
   }
 
   function spin() {
     const bet = parseInt(document.getElementById('betAmount').value);
-    if (balance < bet) { alert('Saldo insuficiente'); return; }
-    balance -= bet; updateBalance();
+    if (balance < bet) {
+      alert('Saldo insuficiente');
+      return;
+    }
+    balance -= bet;
+    updateBalance();
+
     document.getElementById('spinSound').play();
-    const cols = [0,1,2].map(i => document.querySelectorAll(`#col-${i} img`));
+
+    const cols = [0, 1, 2].map(i => document.querySelectorAll(`#col-${i} img`));
     const multCol = document.querySelectorAll('#col-mult img');
     const resultText = document.getElementById('result');
+
+    document.querySelectorAll('img').forEach(img => img.classList.remove('winner'));
     resultText.textContent = 'Girando...';
+
     let interval = setInterval(() => {
-      cols.forEach(col => col.forEach(img => img.src = symbols[Math.floor(Math.random()*symbols.length)]));
+      cols.forEach(col => {
+        const top = symbols[Math.floor(Math.random() * symbols.length)];
+        col[2].src = col[1].src;
+        col[1].src = col[0].src;
+        col[0].src = top;
+      });
       multCol.forEach(img => {
-        const val = multipliers[Math.floor(Math.random()*multipliers.length)];
+        const val = multipliers[Math.floor(Math.random() * multipliers.length)];
         img.dataset.value = val;
-        img.src = val==='wheel' ? 'mult_wheel.png' : `mult_${val}.png`;
+        img.src = val === 'wheel' ? 'mult_wheel.png' : `mult_${val}.png`;
       });
     }, 100);
 
     setTimeout(() => {
       clearInterval(interval);
-      const grid = cols.map(col => Array.from(col).map(img => img.src.split('/').pop()));
-      const multiplier = multCol[1].dataset.value;
-      let winningSymbol = null, winningCells = [];
 
-      for (let row = 0; row < 3; row++) {
-        if (symbolsMatch(grid[0][row], grid[1][row]) && symbolsMatch(grid[1][row], grid[2][row])) {
-          winningSymbol = nonWildcard([grid[0][row], grid[1][row], grid[2][row]]);
-          winningCells.push(cols[0][row], cols[1][row], cols[2][row]);
-        }
+      const grid = cols.map(col => Array.from(col).map(img => symbols.find(s => img.src.includes(s))));
+      const multiplier = multCol[1].dataset.value;
+
+      const lines = [
+        [grid[0][0], grid[1][0], grid[2][0], [cols[0][0], cols[1][0], cols[2][0]]],
+        [grid[0][1], grid[1][1], grid[2][1], [cols[0][1], cols[1][1], cols[2][1]]],
+        [grid[0][2], grid[1][2], grid[2][2], [cols[0][2], cols[1][2], cols[2][2]]],
+        [grid[0][0], grid[1][1], grid[2][2], [cols[0][0], cols[1][1], cols[2][2]]],
+        [grid[0][2], grid[1][1], grid[2][0], [cols[0][2], cols[1][1], cols[2][0]]],
+      ];
+
+      let winningSymbol = null;
+      let winningCells = [];
+
+      function checkLine(line) {
+        const nonWild = line.filter(s => s !== 'symbol_8.png');
+        if (nonWild.length === 0) return null;
+        const base = nonWild[0];
+        if (nonWild.every(s => s === base)) return base;
+        return null;
       }
-      if (!winningSymbol) {
-        if (symbolsMatch(grid[0][0], grid[1][1]) && symbolsMatch(grid[1][1], grid[2][2])) {
-          winningSymbol = nonWildcard([grid[0][0], grid[1][1], grid[2][2]]);
-          winningCells.push(cols[0][0], cols[1][1], cols[2][2]);
-        } else if (symbolsMatch(grid[0][2], grid[1][1]) && symbolsMatch(grid[1][1], grid[2][0])) {
-          winningSymbol = nonWildcard([grid[0][2], grid[1][1], grid[2][0]]);
-          winningCells.push(cols[0][2], cols[1][1], cols[2][0]);
+
+      for (const [a, b, c, cells] of lines) {
+        const winSym = checkLine([a, b, c]);
+        if (winSym) {
+          winningSymbol = winSym;
+          winningCells = cells;
+          break; // solo la primera línea ganadora
         }
       }
 
       if (winningSymbol) {
         winningCells.forEach(img => img.classList.add('winner'));
-        const base = symbolValues[winningSymbol]*bet;
-        const mult = multiplier==='wheel'?1:parseInt(multiplier);
-        const prize = base*mult;
-        balance += prize; updateBalance();
+        multCol[1].classList.add('winner');
         document.getElementById('winSound').play();
-        resultText.textContent = `Ganaste $${prize}`;
-        showFloatingWin(`+$${prize}`);
-        if (multiplier==='wheel') setTimeout(() => openWheelModal(resultText, base), 2000);
+      }
+
+      if (multiplier === 'wheel') {
+        multCol[1].classList.add('winner');
+        setTimeout(() => {
+          openWheelModal(resultText, winningSymbol ? symbolValues[winningSymbol] * bet : 0);
+        }, 2000);
       } else {
-        resultText.textContent = 'Sigue intentando';
+        const multNum = parseInt(multiplier) || 1;
+        if (winningSymbol) {
+          const base = symbolValues[winningSymbol] * bet;
+          const prize = base * multNum;
+          balance += prize;
+          updateBalance(true);
+          resultText.textContent = `🎉 Ganaste: $${base} x${multNum} = $${prize}`;
+          showFloatingWin(`+$${prize}`);
+        } else {
+          resultText.textContent = 'Intenta de nuevo';
+        }
       }
     }, 2000);
-  }
-
-  function symbolsMatch(a,b) { return a===b || a==='symbol_8.png' || b==='symbol_8.png'; }
-  function nonWildcard(arr) { return arr.find(s => s!=='symbol_8.png') || 'symbol_8.png'; }
-  function showFloatingWin(msg) {
-    const f = document.getElementById('floatingWin');
-    setTimeout(()=>{f.textContent=msg;f.classList.add('show');setTimeout(()=>f.classList.remove('show'),4000)},2000);
   }
 
   function openWheelModal(resultText, basePrize) {
     document.getElementById('wheelSound').play();
     const modal = document.getElementById('wheelModal');
+    const wheelStatus = document.getElementById('wheelStatus');
+    const wheelResult = document.getElementById('wheelResult');
     const wheelImage = document.getElementById('wheelImage');
-    const bonus = [5,10,15,500,1000000][Math.floor(Math.random()*5)];
+
+    const bonusOptions = [5, 10, 15, 20, 500, 25000, 10000, 500, 100, 1000000];
+    const degreesPerSlice = 360 / bonusOptions.length;
+
     modal.style.display = 'flex';
+    wheelStatus.textContent = '🎡 Preparando ruleta...';
+    wheelResult.textContent = '';
+
     setTimeout(() => {
-      wheelImage.style.transform = `rotate(${Math.random()*360+1440}deg)`;
+      const prizeIndex = Math.floor(Math.random() * bonusOptions.length);
+      const prize = bonusOptions[prizeIndex];
+      const extraSpins = 5;
+      const angle = 360 * extraSpins + (prizeIndex * degreesPerSlice) + degreesPerSlice / 2;
+
+      wheelImage.style.transform = `rotate(${angle}deg)`;
+
       setTimeout(() => {
-        resultText.textContent += ` + ruleta $${bonus}`;
-        balance += bonus; updateBalance();
-        showFloatingWin(`+$${bonus}`);
-        setTimeout(() => modal.style.display='none', 3000);
+        wheelStatus.textContent = '🎉 Resultado:';
+        wheelResult.textContent = `$${prize}`;
+        const total = basePrize + prize;
+        balance += total;
+        updateBalance(true);
+        resultText.textContent = `🎡 Wheel Bonus: Base $${basePrize} + Ruleta $${prize} = Total $${total}`;
+        showFloatingWin(`+$${total}`);
+        setTimeout(() => modal.style.display = 'none', 2000);
       }, 5000);
     }, 2000);
   }
 </script>
+
 </body>
 </html>
