@@ -38,9 +38,7 @@
       box-shadow: 0 0 10px #ff00ff;
       transition: transform 0.3s, filter 0.3s;
     }
-    .controls {
-      margin-top: 15px;
-    }
+
     button {
       padding: 10px 20px;
       font-size: 1em;
@@ -152,16 +150,44 @@
     }
 
 
-    .slot-machine {
-    background-image: url('fondo-slot.jpg'); /* o URL externa */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    padding: 20px; /* para que no pegue a los bordes */
-    border-radius: 20px; /* opcional, para que se vea elegante */
-    position: relative;
-    z-index: 1;
-    }
+  .slot-machine-container {
+  position: relative;
+  background-image: url('A_2D_digital_illustration_depicts_a_slot_machine_g.png');
+  background-size: cover;
+  background-position: center;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 0 10px #000;
+  width: fit-content;
+  margin: auto;
+}
+
+.slot-machine {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  z-index: 1;
+}
+
+.controls {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  z-index: 2;
+}
+
+.controls select, .controls button {
+  font-size: 16px;
+  padding: 5px 10px;
+}
+
+.column img {
+  width: 70px;
+  height: 70px;
+}
+
 
     
   </style>
