@@ -479,21 +479,26 @@ function toggleAuto() {
 }
 
 
-  function stopAuto() {
-    autoSpin = false;
-    clearInterval(spinInterval);
-    document.getElementById('autoBtn').textContent = '▶️ Auto';
+function toggleAuto() {
+  if (autoSpin) {
+    stopAuto();
+  } else {
+    autoSpin = true;
+    document.getElementById('autoBtn').textContent = '⏹️ Stop';
+    spin();
   }
+}
+
+function stopAuto() {
+  autoSpin = false;
+  document.getElementById('autoBtn').textContent = '▶️ Auto';
+}
 
 function setSpeed(mult) {
   spinSpeed = 100 / mult;
   document.getElementById('speedStatus').textContent = `Velocidad: x${mult}`;
-  
-  if (autoSpin) {
-    clearInterval(spinInterval);
-    spinInterval = setInterval(spin, spinSpeed * 20 + 100);
-  }
 }
+
 
 </script>
 </body>
