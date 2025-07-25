@@ -227,6 +227,7 @@
 <script>
 
 let spinSpeed = 100;
+let isSpinning = false;
 
 
 // Lista de imágenes a precargar
@@ -326,10 +327,13 @@ function startGame() {
   }
 
 function spin() {
+  if (isSpinning) return;  // 🚫 Ya hay uno girando
+  isSpinning = true;       // 🔒 Marca que está girando
   const bet = parseInt(document.getElementById('betAmount').value);
   if (balance < bet) {
     alert('Saldo insuficiente');
     stopAuto();
+    isSpinning = false; // 🔓 Libera bloqueo si no se gira
     return;
   }
   balance -= bet; updateBalance();
@@ -407,6 +411,11 @@ function spin() {
       } else {
         resultText.textContent = 'Intenta de nuevo';
       }
+    }
+    isSpinning = false; // 🔓 Libera bloqueo
+        // Si está en Auto, lanza otro giro
+    if (autoSpin) {
+      spin();
     }
 
   }, totalSpinTime); // <--- AHORA usa tiempo dinámico
