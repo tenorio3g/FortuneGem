@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Fortune Gem Slot</title>
+  <title>Fortune Gem Slot V3.95</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
     body {
@@ -13,55 +13,12 @@
       padding: 20px;
       overflow: hidden;
     }
-    h1 {
-      color: gold;
-      text-shadow: 2px 2px 5px #000;
-    }
-    .slot-machine {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 20px auto;
-      max-width: 100%;
-    }
-    .column {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .column img {
-      width: 60px;
-      height: 60px;
-      object-fit: contain;
-      border-radius: 8px;
-      background: #222;
-      box-shadow: 0 0 10px #ff00ff;
-      transition: transform 0.3s, filter 0.3s;
-    }
+    h1 { color: gold; text-shadow: 2px 2px 5px #000; }
 
-    button {
-      padding: 10px 20px;
-      font-size: 1em;
-      border: none;
-      background: gold;
-      color: black;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #ffcc00;
-    }
-    select {
-      padding: 8px;
-      font-size: 1em;
-      border-radius: 5px;
-      border: none;
-      margin-left: 10px;
-    }
-    .result {
-      margin-top: 15px;
-      font-size: 1.2em;
-    }
+    .slot-machine { display: flex; justify-content: center; gap: 10px; margin: 20px auto; }
+    .column { display: flex; flex-direction: column; gap: 5px; }
+    .column img { width: 70px; height: 70px; background: #222; border-radius: 8px; }
+
     .winner {
       animation: shine 0.8s infinite alternate;
     }
@@ -69,183 +26,70 @@
       0% { filter: brightness(1) drop-shadow(0 0 5px gold); transform: scale(1); }
       100% { filter: brightness(1.8) drop-shadow(0 0 15px gold); transform: scale(1.1); }
     }
-    #wheelModal {
-      display: none; position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%; background: rgba(0,0,0,0.85);
-      color: #fff; font-size: 1.2em; justify-content: center;
-      align-items: center; flex-direction: column; z-index: 10;
-    }
-    .wheel-content {
-      background: #222; padding: 20px; border-radius: 15px;
-      box-shadow: 0 0 20px gold; text-align: center;
-      max-width: 90%;
-    }
-    .wheel-container {
-      position: relative;
-      width: 200px; height: 200px; margin: 20px auto;
-    }
-    #wheelImage {
-      width: 100%; height: 100%; border-radius: 50%;
-      transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1);
-    }
-    .pointer {
-      position: absolute; top: -10px; left: 50%;
-      transform: translateX(-50%);
-      width: 0; height: 0;
-      border-left: 12px solid transparent;
-      border-right: 12px solid transparent;
-      border-bottom: 25px solid gold;
-    }
-    .floating-win {
-      position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 2.5em; font-weight: bold;
-      color: gold; text-shadow: 2px 2px 5px black, 0 0 15px gold;
-      border: 2px solid #000;
-      padding: 10px 20px;
-      border-radius: 10px;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.5s, transform 0.5s;
-      z-index: 15;
-    }
-    .floating-win.show {
-      opacity: 1;
-      transform: translate(-50%, -60%) scale(1.1);
-    }
-    #balance {
-      margin-top: 10px;
-      font-size: 1.2em;
-      color: #0f0;
+
+    button { padding: 10px 20px; margin: 5px; font-size: 1em; border: none; border-radius: 8px; cursor: pointer; }
+    button:hover { background: #ffcc00; }
+
+    .controls { margin-top: 20px; }
+
+    #wheelModal, #riskModal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); justify-content: center; align-items: center; flex-direction: column; z-index: 10;
     }
 
-    #splash {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #000; display: flex; justify-content: center; align-items: center;
-    flex-direction: column; z-index: 20;
-    color: white;
+    .wheel-content { background: #222; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 0 20px gold; }
+
+    .wheel-container { position: relative; width: 200px; height: 200px; margin: 20px auto; }
+    #wheelImage { width: 100%; height: 100%; border-radius: 50%; transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1); }
+    .pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0;
+      border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 25px solid gold; }
+
+    #coin {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, gold, #ccaa00);
+      margin: 20px auto;
+    }
+    @keyframes spinCoin {
+      0% { transform: rotateY(0); }
+      100% { transform: rotateY(3600deg); }
     }
 
-
-    
-    #splash img {
-      width: 150px; margin-bottom: 20px;
+    #floatingWin {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-size: 2em; color: gold; background: #000; padding: 10px 20px; border-radius: 10px;
+      opacity: 0; transition: opacity 0.5s, transform 0.5s;
     }
-    #destroyScreen {
-      display: none; position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: black; color: red;
-      font-size: 2em; justify-content: center;
-      align-items: center; text-align: center;
-      z-index: 50; flex-direction: column;
+    #floatingWin.show {
+      opacity: 1; transform: translate(-50%, -60%) scale(1.1);
     }
-    @keyframes shake {
-      0% { transform: translate(0, 0); }
-      25% { transform: translate(10px, 0); }
-      50% { transform: translate(-10px, 0); }
-      75% { transform: translate(10px, 0); }
-      100% { transform: translate(0, 0); }
-    }
-    .shake {
-      animation: shake 0.5s infinite;
-    }
-
-
-  .slot-machine-container {
-  position: relative;
-  background-image: url('fondo-slot.jpg');
-  background-size: cover;
-  background-position: center;
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 0 10px #000;
-  width: fit-content;
-  margin: auto;
-}
-
-.slot-machine {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  z-index: 1;
-}
-
-.controls {
-  margin-top: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  z-index: 2;
-}
-
-.controls select, .controls button {
-  font-size: 16px;
-  padding: 5px 10px;
-}
-
-.column img {
-  width: 70px;
-  height: 70px;
-}
-
-
-    
   </style>
 </head>
 <body>
 
-  <!-- Splash -->
-<!-- Pantalla splash -->
-<div id="splash">
-  <div id="preloader">
-    <p style="font-size: 1.5em; color: gold;">🔄 Cargando...</p>
-  </div>
-  <div id="startButton" style="display: none; flex-direction: column; align-items: center;">
-    <img src="logo_slot.png" alt="Logo Slot" style="width: 150px; margin-bottom: 20px;">
-    <button onclick="startGame()">JUGAR</button>
-  </div>
+<h1>🎰 Fortune Gem Slot V3.95</h1>
+<div id="balance">Saldo: $200</div>
+
+<div class="slot-machine">
+  <div class="column" id="col-0"><img><img><img></div>
+  <div class="column" id="col-1"><img><img><img></div>
+  <div class="column" id="col-2"><img><img><img></div>
+  <div class="column" id="col-mult"><img><img><img></div>
 </div>
 
-
-<h1 style="text-align:center;">🎰 Fortune Gem Slot</h1>
-<div id="balance" style="text-align:center;">Saldo: $100</div>
-
-<div class="slot-machine-container">
-
-  <!-- Slot Columns -->
-  <div class="slot-machine">
-    <div class="column" id="col-0"><img><img><img></div>
-    <div class="column" id="col-1"><img><img><img></div>
-    <div class="column" id="col-2"><img><img><img></div>
-    <div class="column" id="col-mult"><img><img><img></div>
-  </div>
-
-  <!-- Botones y controles -->
-  <div class="controls">
-    Apuesta:
-    <select id="betAmount">
-      <option value="2">$2</option>
-      <option value="5">$5</option>
-      <option value="10">$10</option>
-      <option value="100">$100</option>
-      <option value="1000">$1000</option>
-      <option value="10000">$10000</option>
-    </select>
-    <button onclick="spin()">Girar</button>
-    <button id="autoBtn" onclick="toggleAuto()">▶️ Auto</button>
-    <button onclick="setSpeed(1)">x1</button>
-    <button onclick="setSpeed(2)">x2</button>
-    <button onclick="setSpeed(3)">x3</button>
-    <span id="speedStatus">Velocidad: x1</span>
-  </div>
-
+<div class="controls">
+  <select id="betAmount">
+    <option value="5">$5</option>
+    <option value="10">$10</option>
+    <option value="20">$20</option>
+  </select>
+  <button onclick="spin()">🎰 Girar</button>
+  <button id="autoBtn" onclick="toggleAuto()">▶️ Auto</button>
 </div>
 
-<!-- Resultado -->
-<div class="result" id="result" style="text-align:center;">¡Buena suerte!</div>
-<div id="floatingWin" class="floating-win"></div>
+<div id="result">¡Buena Suerte!</div>
+<div id="floatingWin"></div>
 
-<!-- Modal de la ruleta -->
+<!-- Wheel Modal -->
 <div id="wheelModal">
   <div class="wheel-content">
     <div class="wheel-container">
@@ -257,78 +101,46 @@
   </div>
 </div>
 
-  <div id="destroyScreen">
-    💥🔥 ¡Lo sentimos! Se quemó todo el dinero 🔥💥
+<!-- Riesgo Total Modal -->
+<div id="riskModal" style="display:none; justify-content:center; align-items:center; flex-direction:column;">
+  <div style="background:#222; padding:20px; border-radius:10px; text-align:center;">
+    <h2>⚡ Riesgo Total ⚡</h2>
+    <p>Has caído en el segmento Riesgo Total</p>
+    <button onclick="riskLoseHalf()">💸 Perder Mitad</button>
+    <button onclick="riskDoubleOrNothing()">🎲 Doble o Nada</button>
+    <button onclick="riskReject()">❌ Rechazar</button>
+    <div id="coinContainer" style="display:none;">
+      <div id="coin"></div>
+      <p id="coinResult"></p>
+    </div>
   </div>
-
-  <audio id="spinSound" src="spin.mp3"></audio>
-  <audio id="winSound" src="win.mp3"></audio>
-  <audio id="wheelSound" src="wheel.mp3"></audio>
-  <audio id="bgMusic" src="background.mp3" loop></audio>
-  <audio id="explosionSound" src="explosion.mp3"></audio>
+</div>
 
 <script>
 let spinSpeed = 100;
 let isSpinning = false;
 let autoSpin = false;
-
-const assets = [
-  'symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png','symbol_5.png','symbol_6.png','symbol_7.png','symbol_8.png',
-  'mult_1.png','mult_2.png','mult_3.png','mult_5.png','mult_10.png','mult_wheel.png','logo_slot.png','wheel.png'
-];
-
-let loaded = 0;
-assets.forEach(src => {
-  const img = new Image();
-  img.onload = () => {
-    loaded++;
-    document.getElementById('preloader').innerHTML = `🔄 Cargando... ${Math.floor((loaded/assets.length)*100)}%`;
-    if (loaded === assets.length) showStartButton();
-  };
-  img.src = src;
-});
-
-function showStartButton() {
-  document.getElementById('preloader').style.display = 'none';
-  document.getElementById('startButton').style.display = 'flex';
-}
-
-function startGame() {
-  document.getElementById('splash').style.display = 'none';
-  document.getElementById('bgMusic').play();
-  updateBalance();
-}
-
-const symbols = ['symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png','symbol_5.png','symbol_6.png','symbol_7.png','symbol_8.png'];
-const symbolValues = {'symbol_1.png':1,'symbol_2.png':2,'symbol_3.png':6,'symbol_4.png':1.50,'symbol_5.png':0.80,'symbol_6.png':1.20,'symbol_7.png':1,'symbol_8.png':5};
-const multipliers = [1,2,3,5,10,1,2,3,5,1,2,1,1,2,'wheel'];
 let balance = 200;
 
+const symbols = ['💎','🔔','🍒','⭐','7️⃣','🍋','💰','🍀'];
+const symbolValues = { '💎':1, '🔔':2, '🍒':5, '⭐':3, '7️⃣':10, '🍋':2, '💰':5, '🍀':4 };
+const multipliers = [1,2,3,'wheel'];
+
 function updateBalance(highlight) {
-  const balanceEl = document.getElementById('balance');
-  balanceEl.textContent = `Saldo: $${balance}`;
-  if (highlight) {
-    balanceEl.style.color = '#0f0';
-    setTimeout(() => balanceEl.style.color = '#fff', 1000);
-  }
+  document.getElementById('balance').textContent = `Saldo: $${balance}`;
 }
 
 function showFloatingWin(msg) {
-  const floating = document.getElementById('floatingWin');
-  setTimeout(() => {
-    floating.textContent = msg;
-    floating.classList.add('show');
-    setTimeout(() => floating.classList.remove('show'), 4000);
-  }, 2000);
-}
-
-function getSymbolName(src) {
-  return symbols.find(s => src.includes(s));
+  const f = document.getElementById('floatingWin');
+  f.textContent = msg;
+  f.classList.add('show');
+  setTimeout(() => f.classList.remove('show'), 3000);
 }
 
 function spin() {
   if (isSpinning) return;
   isSpinning = true;
+
   const bet = parseInt(document.getElementById('betAmount').value);
   if (balance < bet) {
     alert('Saldo insuficiente');
@@ -337,153 +149,124 @@ function spin() {
     return;
   }
 
-  balance -= bet;
-  updateBalance();
-  document.getElementById('spinSound').play();
-
+  balance -= bet; updateBalance();
   const cols = [0,1,2].map(i => document.querySelectorAll(`#col-${i} img`));
   const multCol = document.querySelectorAll('#col-mult img');
   const resultText = document.getElementById('result');
-  document.querySelectorAll('img').forEach(img => img.classList.remove('winner'));
-  resultText.textContent = 'Girando...';
 
   let interval = setInterval(() => {
-    cols.forEach(col => {
-      const top = symbols[Math.floor(Math.random() * symbols.length)];
-      col[2].src = col[1].src;
-      col[1].src = col[0].src;
-      col[0].src = top;
-    });
-    multCol.forEach(img => {
-      const val = multipliers[Math.floor(Math.random() * multipliers.length)];
-      img.dataset.value = val;
-      img.src = val === 'wheel' ? 'mult_wheel.png' : `mult_${val}.png`;
-    });
+    cols.forEach(col => col.forEach(img => img.src = symbols[Math.floor(Math.random()*symbols.length)]));
+    multCol.forEach(img => img.dataset.value = multipliers[Math.floor(Math.random()*multipliers.length)]);
   }, spinSpeed);
 
-  let totalSpinTime = spinSpeed * 20;
   setTimeout(() => {
     clearInterval(interval);
-    const grid = cols.map(col => Array.from(col).map(img => getSymbolName(img.src)));
     const multiplier = multCol[1].dataset.value;
 
-    let winningLines = [];
-    function isWinningLine(s1, s2, s3) {
-      const line = [s1, s2, s3];
-      const nonWild = line.filter(s => s !== 'symbol_8.png');
-      const wilds = line.filter(s => s === 'symbol_8.png').length;
-      if (nonWild.length === 0 && wilds === 3) return 'symbol_8.png';
-      if (nonWild.length === 3 && new Set(nonWild).size === 1) return nonWild[0];
-      if (nonWild.length === 1 && wilds === 2) return nonWild[0];
-      if (nonWild.length === 2 && new Set(nonWild).size === 1 && wilds === 1) return nonWild[0];
-      return false;
-    }
-
-    for (let row = 0; row < 3; row++) {
-      const result = isWinningLine(grid[0][row], grid[1][row], grid[2][row]);
-      if (result) winningLines.push({ symbol: result, cells: [cols[0][row], cols[1][row], cols[2][row]] });
-    }
-    let result = isWinningLine(grid[0][0], grid[1][1], grid[2][2]);
-    if (result) winningLines.push({ symbol: result, cells: [cols[0][0], cols[1][1], cols[2][2]] });
-    result = isWinningLine(grid[0][2], grid[1][1], grid[2][0]);
-    if (result) winningLines.push({ symbol: result, cells: [cols[0][2], cols[1][1], cols[2][0]] });
-
-    if (winningLines.length > 0) {
-      winningLines.forEach(line => line.cells.forEach(cell => cell.classList.add('winner')));
-      multCol[1].classList.add('winner');
-      document.getElementById('winSound').play();
-    }
+    const win = Math.random() < 0.5;
+    const basePrize = win ? bet * 2 : 0;
 
     if (multiplier === 'wheel') {
-      multCol[1].classList.add('winner');
-      const totalBase = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
-      setTimeout(() => openWheelModal(resultText, totalBase), 2000);
+      setTimeout(() => openWheelModal(resultText, basePrize), 2000);
     } else {
-      const multNum = parseInt(multiplier) || 1;
-      if (winningLines.length > 0) {
-        const base = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
-        const prize = base * multNum;
-        balance += prize;
-        updateBalance(true);
-        resultText.textContent = `🎉 ¡Ganaste!: Base $${base} x${multNum} = $${prize}`;
-        showFloatingWin(`+$${prize}`);
-      } else {
-        resultText.textContent = 'Intenta de nuevo';
-      }
+      balance += basePrize;
+      updateBalance();
+      resultText.textContent = win ? `Ganaste: $${basePrize}` : 'Intenta de nuevo';
+      showFloatingWin(`+$${basePrize}`);
       isSpinning = false;
-      if (autoSpin) {
-        setTimeout(() => spin(), winningLines.length > 0 ? 2500 : 500);
-      }
+      if (autoSpin) spin();
     }
-  }, totalSpinTime);
+  }, 2000);
 }
 
 function openWheelModal(resultText, basePrize) {
-  document.getElementById('wheelSound').play();
   const modal = document.getElementById('wheelModal');
   const wheelStatus = document.getElementById('wheelStatus');
   const wheelResult = document.getElementById('wheelResult');
   const wheelImage = document.getElementById('wheelImage');
-  const bonusOptions = [5,2,60,3,50,10,2,5,4,2,4,6,2,1,4,100,1,4,10,1000000];
-  const degreesPerSlice = 360 / bonusOptions.length;
+
+  const options = [5,20,50,'risk'];
+  const slice = 360 / options.length;
 
   modal.style.display = 'flex';
-  wheelStatus.textContent = '🎡 Preparando ruleta...';
-  wheelResult.textContent = '';
+  wheelStatus.textContent = '🎡 Girando...';
 
   setTimeout(() => {
-    const prizeIndex = Math.floor(Math.random() * bonusOptions.length);
-    const prize = bonusOptions[prizeIndex];
-    const extraSpins = 5;
-    const angle = 360 * extraSpins + (prizeIndex * degreesPerSlice) + degreesPerSlice / 2;
+    const prizeIndex = Math.floor(Math.random() * options.length);
+    const prize = options[prizeIndex];
+    const angle = 360 * 5 + (prizeIndex * slice) + slice/2;
+
     wheelImage.style.transform = `rotate(${angle}deg)`;
 
     setTimeout(() => {
-      wheelStatus.textContent = '🎉 Resultado:';
-      wheelResult.textContent = `$${prize}`;
+      wheelStatus.textContent = 'Resultado:';
+      wheelResult.textContent = prize === 'risk' ? '⚡ Riesgo Total ⚡' : `$${prize}`;
 
-      if (prize >= 1000000) {
-        balance = 0;
-        updateBalance();
-        document.getElementById('explosionSound').play();
-        document.body.classList.add('shake');
-        setTimeout(() => document.getElementById('destroyScreen').style.display = 'flex', 1000);
+      if (prize === 'risk') {
+        modal.style.display = 'none';
+        openRiskModal();
       } else {
         const total = basePrize + prize;
         balance += total;
-        updateBalance(true);
-        resultText.textContent = `🎡 Wheel Bonus: Base $${basePrize} + Ruleta $${prize} = Total $${total}`;
+        updateBalance();
+        resultText.textContent = `Wheel: Base $${basePrize} + Bonus $${prize} = $${total}`;
         showFloatingWin(`+$${total}`);
-        setTimeout(() => {
-          modal.style.display = 'none';
-          isSpinning = false;
-          if (autoSpin) spin();
-        }, 2000);
+        modal.style.display = 'none';
+        isSpinning = false;
+        if (autoSpin) spin();
       }
     }, 5000);
-  }, 2000);
+  }, 1000);
+}
+
+function openRiskModal() {
+  document.getElementById('riskModal').style.display = 'flex';
+}
+
+function riskLoseHalf() {
+  balance = Math.floor(balance/2);
+  updateBalance();
+  closeRiskModal();
+}
+
+function riskDoubleOrNothing() {
+  const coin = document.getElementById('coin');
+  const coinResult = document.getElementById('coinResult');
+  document.getElementById('coinContainer').style.display = 'block';
+
+  coin.style.animation = 'spinCoin 3s linear';
+  setTimeout(() => {
+    const win = Math.random() < 0.5;
+    coin.style.animation = 'none';
+    coinResult.textContent = win ? '✅ Ganaste!' : '❌ Perdiste todo!';
+    if (win) balance *= 2; else balance = 0;
+    updateBalance();
+    setTimeout(() => closeRiskModal(), 2000);
+  }, 3000);
+}
+
+function riskReject() {
+  closeRiskModal();
+}
+
+function closeRiskModal() {
+  document.getElementById('riskModal').style.display = 'none';
+  document.getElementById('coinContainer').style.display = 'none';
+  document.getElementById('coinResult').textContent = '';
+  isSpinning = false;
+  if (autoSpin) spin();
 }
 
 function toggleAuto() {
-  if (autoSpin) {
-    stopAuto();
-  } else {
-    autoSpin = true;
-    document.getElementById('autoBtn').textContent = '⏹️ Stop';
-    if (!isSpinning) spin();
-  }
+  autoSpin = !autoSpin;
+  document.getElementById('autoBtn').textContent = autoSpin ? '⏹️ Stop' : '▶️ Auto';
+  if (autoSpin && !isSpinning) spin();
 }
 
 function stopAuto() {
   autoSpin = false;
   document.getElementById('autoBtn').textContent = '▶️ Auto';
 }
-
-function setSpeed(mult) {
-  spinSpeed = 100 / mult;
-  document.getElementById('speedStatus').textContent = `Velocidad: x${mult}`;
-}
 </script>
-
 </body>
 </html>
