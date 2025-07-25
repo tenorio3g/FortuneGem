@@ -228,6 +228,7 @@
 
 let spinSpeed = 100;
 let isSpinning = false;
+  
 
 
 // Lista de imágenes a precargar
@@ -485,7 +486,9 @@ function toggleAuto() {
   } else {
     autoSpin = true;
     document.getElementById('autoBtn').textContent = '⏹️ Stop';
-    spin();
+    if (!isSpinning) {
+      spin();
+    }
   }
 }
 
