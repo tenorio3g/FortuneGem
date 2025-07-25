@@ -225,45 +225,22 @@
   <audio id="explosionSound" src="explosion.mp3"></audio>
 
 <script>
-
 let spinSpeed = 100;
 let isSpinning = false;
 let autoSpin = false;
 
-  
-
-
-// Lista de imágenes a precargar
 const assets = [
-  'symbol_1.png',
-  'symbol_2.png',
-  'symbol_3.png',
-  'symbol_4.png',
-  'symbol_5.png',
-  'symbol_6.png',
-  'symbol_7.png',
-  'symbol_8.png',
-  'mult_1.png',
-  'mult_2.png',
-  'mult_3.png',
-  'mult_5.png',
-  'mult_10.png',
-  'mult_wheel.png',
-  'logo_slot.png',
-  'wheel.png'
+  'symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png','symbol_5.png','symbol_6.png','symbol_7.png','symbol_8.png',
+  'mult_1.png','mult_2.png','mult_3.png','mult_5.png','mult_10.png','mult_wheel.png','logo_slot.png','wheel.png'
 ];
 
 let loaded = 0;
-
 assets.forEach(src => {
   const img = new Image();
   img.onload = () => {
     loaded++;
-    // Si quieres mostrar progreso:
     document.getElementById('preloader').innerHTML = `🔄 Cargando... ${Math.floor((loaded/assets.length)*100)}%`;
-    if (loaded === assets.length) {
-      showStartButton();
-    }
+    if (loaded === assets.length) showStartButton();
   };
   img.src = src;
 });
@@ -275,76 +252,52 @@ function showStartButton() {
 
 function startGame() {
   document.getElementById('splash').style.display = 'none';
-  const bgMusic = document.getElementById('bgMusic');
-  bgMusic.play();
+  document.getElementById('bgMusic').play();
   updateBalance();
 }
 
+const symbols = ['symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png','symbol_5.png','symbol_6.png','symbol_7.png','symbol_8.png'];
+const symbolValues = {'symbol_1.png':1,'symbol_2.png':4,'symbol_3.png':6,'symbol_4.png':10,'symbol_5.png':0.80,'symbol_6.png':1.20,'symbol_7.png':1,'symbol_8.png':5};
+const multipliers = [1,2,3,'wheel'];
+let balance = 100;
 
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  const symbols = ['symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png','symbol_5.png','symbol_6.png','symbol_7.png','symbol_8.png'];
-  const symbolValues = {'symbol_1.png':1,'symbol_2.png':4,'symbol_3.png':6,'symbol_4.png':10,'symbol_5.png':0.80,'symbol_6.png':1.20,'symbol_7.png':1,'symbol_8.png':5};
-  const multipliers = [1,2,3,'wheel'];
-
-  let balance = 100;
-
-  function startGame() {
-    document.getElementById('splash').style.display = 'none';
-    const bgMusic = document.getElementById('bgMusic');
-    bgMusic.play();
-    updateBalance();
+function updateBalance(highlight) {
+  const balanceEl = document.getElementById('balance');
+  balanceEl.textContent = `Saldo: $${balance}`;
+  if (highlight) {
+    balanceEl.style.color = '#0f0';
+    setTimeout(() => balanceEl.style.color = '#fff', 1000);
   }
+}
 
-  function updateBalance(highlight) {
-    const balanceEl = document.getElementById('balance');
-    balanceEl.textContent = `Saldo: $${balance}`;
-    if (highlight) {
-      balanceEl.style.color = '#0f0';
-      setTimeout(() => balanceEl.style.color = '#fff', 1000);
-    }
-  }
+function showFloatingWin(msg) {
+  const floating = document.getElementById('floatingWin');
+  setTimeout(() => {
+    floating.textContent = msg;
+    floating.classList.add('show');
+    setTimeout(() => floating.classList.remove('show'), 4000);
+  }, 2000);
+}
 
-  function showFloatingWin(msg) {
-    const floating = document.getElementById('floatingWin');
-    setTimeout(() => {
-      floating.textContent = msg;
-      floating.classList.add('show');
-      setTimeout(() => floating.classList.remove('show'), 4000);
-    }, 2000);
-  }
-
-  function getSymbolName(src) {
-    return symbols.find(s => src.includes(s));
-  }
+function getSymbolName(src) {
+  return symbols.find(s => src.includes(s));
+}
 
 function spin() {
-  if (isSpinning) return;  // 🚫 Ya hay uno girando
-  isSpinning = true;       // 🔒 Marca que está girando
-
+  if (isSpinning) return;
+  isSpinning = true;
   const bet = parseInt(document.getElementById('betAmount').value);
   if (balance < bet) {
     alert('Saldo insuficiente');
     stopAuto();
-    isSpinning = false; // 🔓 Libera bloqueo si no se gira
+    isSpinning = false;
     return;
   }
 
   balance -= bet;
   updateBalance();
-
   document.getElementById('spinSound').play();
+
   const cols = [0,1,2].map(i => document.querySelectorAll(`#col-${i} img`));
   const multCol = document.querySelectorAll('#col-mult img');
   const resultText = document.getElementById('result');
@@ -366,13 +319,11 @@ function spin() {
   }, spinSpeed);
 
   let totalSpinTime = spinSpeed * 20;
-
   setTimeout(() => {
     clearInterval(interval);
     const grid = cols.map(col => Array.from(col).map(img => getSymbolName(img.src)));
     const multiplier = multCol[1].dataset.value;
 
-    // --- MULTI-WIN ---
     let winningLines = [];
     function isWinningLine(s1, s2, s3) {
       const line = [s1, s2, s3];
@@ -385,12 +336,10 @@ function spin() {
       return false;
     }
 
-    // Filas
     for (let row = 0; row < 3; row++) {
       const result = isWinningLine(grid[0][row], grid[1][row], grid[2][row]);
       if (result) winningLines.push({ symbol: result, cells: [cols[0][row], cols[1][row], cols[2][row]] });
     }
-    // Diagonales
     let result = isWinningLine(grid[0][0], grid[1][1], grid[2][2]);
     if (result) winningLines.push({ symbol: result, cells: [cols[0][0], cols[1][1], cols[2][2]] });
     result = isWinningLine(grid[0][2], grid[1][1], grid[2][0]);
@@ -408,7 +357,6 @@ function spin() {
       setTimeout(() => openWheelModal(resultText, totalBase), 2000);
     } else {
       const multNum = parseInt(multiplier) || 1;
-
       if (winningLines.length > 0) {
         const base = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
         const prize = base * multNum;
@@ -419,20 +367,14 @@ function spin() {
       } else {
         resultText.textContent = 'Intenta de nuevo';
       }
-
-      // 🔓 Libera bloqueo ANTES de decidir si sigue auto
       isSpinning = false;
-
       if (autoSpin) {
-        setTimeout(() => {
-         spin();
-        }, winningLines.length > 0 ? 2500 : 500);
+        setTimeout(() => spin(), winningLines.length > 0 ? 2500 : 500);
       }
     }
   }, totalSpinTime);
 }
 
-// FUERA DE SPIN:
 function openWheelModal(resultText, basePrize) {
   document.getElementById('wheelSound').play();
   const modal = document.getElementById('wheelModal');
@@ -450,8 +392,7 @@ function openWheelModal(resultText, basePrize) {
     const prizeIndex = Math.floor(Math.random() * bonusOptions.length);
     const prize = bonusOptions[prizeIndex];
     const extraSpins = 5;
-    const angle = 360 * extraSpins + (prizeIndex * degreesPerSlice) + degreesPerSlice/2;
-
+    const angle = 360 * extraSpins + (prizeIndex * degreesPerSlice) + degreesPerSlice / 2;
     wheelImage.style.transform = `rotate(${angle}deg)`;
 
     setTimeout(() => {
@@ -459,12 +400,11 @@ function openWheelModal(resultText, basePrize) {
       wheelResult.textContent = `$${prize}`;
 
       if (prize >= 1000000) {
-        balance = 0; updateBalance();
+        balance = 0;
+        updateBalance();
         document.getElementById('explosionSound').play();
         document.body.classList.add('shake');
-        setTimeout(() => {
-          document.getElementById('destroyScreen').style.display = 'flex';
-        }, 1000);
+        setTimeout(() => document.getElementById('destroyScreen').style.display = 'flex', 1000);
       } else {
         const total = basePrize + prize;
         balance += total;
@@ -473,6 +413,7 @@ function openWheelModal(resultText, basePrize) {
         showFloatingWin(`+$${total}`);
         setTimeout(() => {
           modal.style.display = 'none';
+          isSpinning = false;
           if (autoSpin) spin();
         }, 2000);
       }
@@ -486,12 +427,9 @@ function toggleAuto() {
   } else {
     autoSpin = true;
     document.getElementById('autoBtn').textContent = '⏹️ Stop';
-    if (!isSpinning) {
-      spin();
-    }
+    if (!isSpinning) spin();
   }
 }
-
 
 function stopAuto() {
   autoSpin = false;
@@ -502,8 +440,7 @@ function setSpeed(mult) {
   spinSpeed = 100 / mult;
   document.getElementById('speedStatus').textContent = `Velocidad: x${mult}`;
 }
-
-
 </script>
+
 </body>
 </html>
