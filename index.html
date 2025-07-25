@@ -169,7 +169,7 @@
 </div>
 
 
-  <h1>🎰 Fortune Gem Tenorio</h1>
+  <h1>🎰 Fortune Gem Slot</h1>
   <div id="balance">Saldo: $100</div>
 
   <div class="controls">
@@ -184,12 +184,6 @@
       <option value="10000">$10000</option>
     </select>
     <button onclick="spin()">Girar</button>
-    <button id="autoBtn" onclick="toggleAuto()">▶️ Auto</button>
-    <button onclick="setSpeed(1)">x1</button>
-    <button onclick="setSpeed(2)">x2</button>
-    <button onclick="setSpeed(3)">x3</button>
-    <span id="speedStatus">Velocidad: x1</span>
-
   </div>
 
   <div class="slot-machine">
@@ -225,21 +219,82 @@
   <audio id="explosionSound" src="explosion.mp3"></audio>
 
 <script>
-  const symbols = [
-    'symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png',
-    'symbol_5.png','symbol_6.png','symbol_7.png','symbol_8.png'
-  ];
-  const symbolValues = {
-    'symbol_1.png':1,'symbol_2.png':4,'symbol_3.png':6,
-    'symbol_4.png':10,'symbol_5.png':0.80,'symbol_6.png':1.20,
-    'symbol_7.png':1,'symbol_8.png':5
+
+
+
+// Lista de imágenes a precargar
+const assets = [
+  'symbol_1.png',
+  'symbol_2.png',
+  'symbol_3.png',
+  'symbol_4.png',
+  'symbol_5.png',
+  'symbol_6.png',
+  'symbol_7.png',
+  'symbol_8.png',
+  'mult_1.png',
+  'mult_2.png',
+  'mult_3.png',
+  'mult_5.png',
+  'mult_10.png',
+  'mult_wheel.png',
+  'logo_slot.png',
+  'wheel.png'
+];
+
+let loaded = 0;
+
+assets.forEach(src => {
+  const img = new Image();
+  img.onload = () => {
+    loaded++;
+    // Si quieres mostrar progreso:
+    document.getElementById('preloader').innerHTML = `🔄 Cargando... ${Math.floor((loaded/assets.length)*100)}%`;
+    if (loaded === assets.length) {
+      showStartButton();
+    }
   };
+  img.src = src;
+});
+
+function showStartButton() {
+  document.getElementById('preloader').style.display = 'none';
+  document.getElementById('startButton').style.display = 'flex';
+}
+
+function startGame() {
+  document.getElementById('splash').style.display = 'none';
+  const bgMusic = document.getElementById('bgMusic');
+  bgMusic.play();
+  updateBalance();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  const symbols = ['symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png','symbol_5.png','symbol_6.png','symbol_7.png','symbol_8.png'];
+  const symbolValues = {'symbol_1.png':1,'symbol_2.png':4,'symbol_3.png':6,'symbol_4.png':10,'symbol_5.png':0.80,'symbol_6.png':1.20,'symbol_7.png':1,'symbol_8.png':5};
   const multipliers = [1,2,3,'wheel'];
 
   let balance = 100;
-  let autoSpin = false;
-  let spinInterval = null;
-  let spinSpeed = 100; // Normal
+
+  function startGame() {
+    document.getElementById('splash').style.display = 'none';
+    const bgMusic = document.getElementById('bgMusic');
+    bgMusic.play();
+    updateBalance();
+  }
 
   function updateBalance(highlight) {
     const balanceEl = document.getElementById('balance');
@@ -256,7 +311,7 @@
       floating.textContent = msg;
       floating.classList.add('show');
       setTimeout(() => floating.classList.remove('show'), 4000);
-    }, 500);
+    }, 2000);
   }
 
   function getSymbolName(src) {
@@ -267,7 +322,6 @@
     const bet = parseInt(document.getElementById('betAmount').value);
     if (balance < bet) {
       alert('Saldo insuficiente');
-      stopAuto();
       return;
     }
     balance -= bet; updateBalance();
@@ -289,72 +343,62 @@
         img.dataset.value = val;
         img.src = val==='wheel' ? 'mult_wheel.png' : `mult_${val}.png`;
       });
-    }, spinSpeed);
+    }, 100);
 
     setTimeout(() => {
       clearInterval(interval);
       const grid = cols.map(col => Array.from(col).map(img => getSymbolName(img.src)));
       const multiplier = multCol[1].dataset.value;
+    // --- MULTI-WIN ---
+    let winningLines = [];
+    function isWinningLine(s1, s2, s3) {
+      const line = [s1, s2, s3];
+      const nonWild = line.filter(s => s !== 'symbol_8.png');
+      const wilds = line.filter(s => s === 'symbol_8.png').length;
+      if (nonWild.length === 0 && wilds === 3) return 'symbol_8.png';
+      if (nonWild.length === 3 && new Set(nonWild).size === 1) return nonWild[0];
+      if (nonWild.length === 1 && wilds === 2) return nonWild[0];
+      if (nonWild.length === 2 && new Set(nonWild).size === 1 && wilds === 1) return nonWild[0];
+      return false;
+    }
 
-      const allWins = [];
-      function isWinningLine(s1, s2, s3) {
-        const line = [s1, s2, s3];
-        const nonWild = line.filter(s => s !== 'symbol_8.png');
-        const wilds = line.filter(s => s === 'symbol_8.png').length;
-        if (nonWild.length === 0 && wilds === 3) return 'symbol_8.png';
-        if (nonWild.length === 3 && new Set(nonWild).size === 1) return nonWild[0];
-        if (nonWild.length === 1 && wilds === 2) return nonWild[0];
-        if (nonWild.length === 2 && new Set(nonWild).size === 1 && wilds === 1) return nonWild[0];
-        return false;
-      }
+    // Filas
+    for (let row = 0; row < 3; row++) {
+      const result = isWinningLine(grid[0][row], grid[1][row], grid[2][row]);
+      if (result) winningLines.push({ symbol: result, cells: [cols[0][row], cols[1][row], cols[2][row]] });
+    }
+    // Diagonales
+    let result = isWinningLine(grid[0][0], grid[1][1], grid[2][2]);
+    if (result) winningLines.push({ symbol: result, cells: [cols[0][0], cols[1][1], cols[2][2]] });
+    result = isWinningLine(grid[0][2], grid[1][1], grid[2][0]);
+    if (result) winningLines.push({ symbol: result, cells: [cols[0][2], cols[1][1], cols[2][0]] });
 
-      for (let row = 0; row < 3; row++) {
-        const result = isWinningLine(grid[0][row], grid[1][row], grid[2][row]);
-        if (result) {
-          allWins.push({
-            symbol: result,
-            cells: [cols[0][row], cols[1][row], cols[2][row]]
-          });
-        }
-      }
+    if (winningLines.length > 0) {
+      winningLines.forEach(line => line.cells.forEach(cell => cell.classList.add('winner')));
+      multCol[1].classList.add('winner');
+      document.getElementById('winSound').play();
+    }
 
-      let diag1 = isWinningLine(grid[0][0], grid[1][1], grid[2][2]);
-      if (diag1) allWins.push({
-        symbol: diag1,
-        cells: [cols[0][0], cols[1][1], cols[2][2]]
-      });
-
-      let diag2 = isWinningLine(grid[0][2], grid[1][1], grid[2][0]);
-      if (diag2) allWins.push({
-        symbol: diag2,
-        cells: [cols[0][2], cols[1][1], cols[2][0]]
-      });
-
-      if (allWins.length) {
-        allWins.forEach(win => win.cells.forEach(img => img.classList.add('winner')));
-        multCol[1].classList.add('winner');
-        document.getElementById('winSound').play();
-      }
-
-      if (multiplier === 'wheel') {
-        multCol[1].classList.add('winner');
-        setTimeout(() => {
-          openWheelModal(resultText, allWins.reduce((sum,w)=>sum+symbolValues[w.symbol]*bet,0));
-        }, 2000);
+    if (multiplier === 'wheel') {
+      multCol[1].classList.add('winner');
+      const totalBase = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
+      setTimeout(() => openWheelModal(resultText, totalBase), 2000);
+    } else {
+      const multNum = parseInt(multiplier) || 1;
+      if (winningLines.length > 0) {
+        const base = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
+        const prize = base * multNum;
+        balance += prize;
+        updateBalance(true);
+        resultText.textContent = `🎉 ¡Ganaste!: Base $${base} x${multNum} = $${prize}`;
+        showFloatingWin(`+$${prize}`);
       } else {
-        const multNum = parseInt(multiplier)||1;
-        if (allWins.length) {
-          const base = allWins.reduce((sum,w)=>sum+symbolValues[w.symbol]*bet,0);
-          const prize = base * multNum;
-          balance += prize;
-          updateBalance(true);
-          resultText.textContent = `🎉 Ganaste: $${base} x${multNum} = $${prize}`;
-          showFloatingWin(`+$${prize}`);
-        } else resultText.textContent = 'Intenta de nuevo';
+        resultText.textContent = 'Intenta de nuevo';
       }
+    }
 
-    }, 2000);
-  }
+  }, 2000);
+}
 
   function openWheelModal(resultText, basePrize) {
     document.getElementById('wheelSound').play();
@@ -374,6 +418,7 @@
       const prize = bonusOptions[prizeIndex];
       const extraSpins = 5;
       const angle = 360 * extraSpins + (prizeIndex * degreesPerSlice) + degreesPerSlice/2;
+
       wheelImage.style.transform = `rotate(${angle}deg)`;
 
       setTimeout(() => {
@@ -381,6 +426,7 @@
         wheelResult.textContent = `$${prize}`;
 
         if (prize >= 1000000) {
+          // EFECTO DE DESTRUCCIÓN
           balance = 0; updateBalance();
           document.getElementById('explosionSound').play();
           document.body.classList.add('shake');
@@ -398,29 +444,6 @@
       }, 5000);
     }, 2000);
   }
-
-  function toggleAuto() {
-    if (autoSpin) {
-      stopAuto();
-    } else {
-      autoSpin = true;
-      document.getElementById('autoBtn').textContent = '⏹️ Stop';
-      spin();
-      spinInterval = setInterval(spin, 3000);
-    }
-  }
-
-  function stopAuto() {
-    autoSpin = false;
-    clearInterval(spinInterval);
-    document.getElementById('autoBtn').textContent = '▶️ Auto';
-  }
-
-  function setSpeed(mult) {
-    spinSpeed = 100 / mult;
-    document.getElementById('speedStatus').textContent = `Velocidad: x${mult}`;
-  }
 </script>
-
 </body>
 </html>
