@@ -332,6 +332,7 @@ function startGame() {
 function spin() {
   if (isSpinning) return;  // 🚫 Ya hay uno girando
   isSpinning = true;       // 🔒 Marca que está girando
+
   const bet = parseInt(document.getElementById('betAmount').value);
   if (balance < bet) {
     alert('Saldo insuficiente');
@@ -339,7 +340,9 @@ function spin() {
     isSpinning = false; // 🔓 Libera bloqueo si no se gira
     return;
   }
-  balance -= bet; updateBalance();
+
+  balance -= bet;
+  updateBalance();
 
   document.getElementById('spinSound').play();
   const cols = [0,1,2].map(i => document.querySelectorAll(`#col-${i} img`));
@@ -351,16 +354,17 @@ function spin() {
   let interval = setInterval(() => {
     cols.forEach(col => {
       const top = symbols[Math.floor(Math.random() * symbols.length)];
-      col[2].src = col[1].src; col[1].src = col[0].src; col[0].src = top;
+      col[2].src = col[1].src;
+      col[1].src = col[0].src;
+      col[0].src = top;
     });
     multCol.forEach(img => {
       const val = multipliers[Math.floor(Math.random() * multipliers.length)];
       img.dataset.value = val;
       img.src = val === 'wheel' ? 'mult_wheel.png' : `mult_${val}.png`;
     });
-  }, spinSpeed); // <--- AHORA USA spinSpeed
+  }, spinSpeed);
 
-  // Ajusta duración según spinSpeed → 20 ciclos
   let totalSpinTime = spinSpeed * 20;
 
   setTimeout(() => {
@@ -398,41 +402,34 @@ function spin() {
       document.getElementById('winSound').play();
     }
 
-// DENTRO DE SPIN:
-if (multiplier === 'wheel') {
-  multCol[1].classList.add('winner');
-  const totalBase = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
-  setTimeout(() => openWheelModal(resultText, totalBase), 2000);
-} else {
-  const multNum = parseInt(multiplier) || 1;
-if (winningLines.length > 0) {
-  const base = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
-  const prize = base * multNum;
-  balance += prize;
-  updateBalance(true);
-  resultText.textContent = `🎉 ¡Ganaste!: Base $${base} x${multNum} = $${prize}`;
-  showFloatingWin(`+$${prize}`);
+    if (multiplier === 'wheel') {
+      multCol[1].classList.add('winner');
+      const totalBase = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
+      setTimeout(() => openWheelModal(resultText, totalBase), 2000);
+    } else {
+      const multNum = parseInt(multiplier) || 1;
 
-  // ✅ Si está en automático, espera y vuelve a girar
-  if (autoSpin) {
-    setTimeout(() => {
-      spin();
-    }, 2500); // Espera para mostrar el premio
-  }
+      if (winningLines.length > 0) {
+        const base = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
+        const prize = base * multNum;
+        balance += prize;
+        updateBalance(true);
+        resultText.textContent = `🎉 ¡Ganaste!: Base $${base} x${multNum} = $${prize}`;
+        showFloatingWin(`+$${prize}`);
+      } else {
+        resultText.textContent = 'Intenta de nuevo';
+      }
 
-} else {
-  resultText.textContent = 'Intenta de nuevo';
+      // 🔓 Libera bloqueo ANTES de decidir si sigue auto
+      isSpinning = false;
 
-  // ✅ También aquí debe continuar si está en automático
-  if (autoSpin) {
-    setTimeout(() => {
-      spin();
-    }, 500); // Un poco de pausa visual aunque no haya ganado
-  }
-}
-isSpinning = false; // ✅ Siempre libera el bloqueo al final
-
-}, totalSpinTime);
+      if (autoSpin) {
+        setTimeout(() => {
+          if (!isSpinning) spin();
+        }, winningLines.length > 0 ? 2500 : 500);
+      }
+    }
+  }, totalSpinTime);
 }
 
 // FUERA DE SPIN:
