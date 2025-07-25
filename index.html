@@ -349,80 +349,56 @@ function startGame() {
       clearInterval(interval);
       const grid = cols.map(col => Array.from(col).map(img => getSymbolName(img.src)));
       const multiplier = multCol[1].dataset.value;
-// --- MULTI-WIN CORREGIDO ---
-// 1) Acumula TODAS las líneas ganadoras
-let winningLines = []; // Cada línea es: { symbol, cells }
+    // --- MULTI-WIN ---
+    let winningLines = [];
+    function isWinningLine(s1, s2, s3) {
+      const line = [s1, s2, s3];
+      const nonWild = line.filter(s => s !== 'symbol_8.png');
+      const wilds = line.filter(s => s === 'symbol_8.png').length;
+      if (nonWild.length === 0 && wilds === 3) return 'symbol_8.png';
+      if (nonWild.length === 3 && new Set(nonWild).size === 1) return nonWild[0];
+      if (nonWild.length === 1 && wilds === 2) return nonWild[0];
+      if (nonWild.length === 2 && new Set(nonWild).size === 1 && wilds === 1) return nonWild[0];
+      return false;
+    }
 
-function isWinningLine(s1, s2, s3) {
-  const line = [s1, s2, s3];
-  const nonWild = line.filter(s => s !== 'symbol_8.png');
-  const wilds = line.filter(s => s === 'symbol_8.png').length;
+    // Filas
+    for (let row = 0; row < 3; row++) {
+      const result = isWinningLine(grid[0][row], grid[1][row], grid[2][row]);
+      if (result) winningLines.push({ symbol: result, cells: [cols[0][row], cols[1][row], cols[2][row]] });
+    }
+    // Diagonales
+    let result = isWinningLine(grid[0][0], grid[1][1], grid[2][2]);
+    if (result) winningLines.push({ symbol: result, cells: [cols[0][0], cols[1][1], cols[2][2]] });
+    result = isWinningLine(grid[0][2], grid[1][1], grid[2][0]);
+    if (result) winningLines.push({ symbol: result, cells: [cols[0][2], cols[1][1], cols[2][0]] });
 
-  if (nonWild.length === 0 && wilds === 3) return 'symbol_8.png';
-  if (nonWild.length === 3 && new Set(nonWild).size === 1) return nonWild[0];
-  if (nonWild.length === 1 && wilds === 2) return nonWild[0];
-  if (nonWild.length === 2 && new Set(nonWild).size === 1 && wilds === 1) return nonWild[0];
-  return false;
-}
+    if (winningLines.length > 0) {
+      winningLines.forEach(line => line.cells.forEach(cell => cell.classList.add('winner')));
+      multCol[1].classList.add('winner');
+      document.getElementById('winSound').play();
+    }
 
-// Revisa filas
-for (let row = 0; row < 3; row++) {
-  const result = isWinningLine(grid[0][row], grid[1][row], grid[2][row]);
-  if (result) {
-    winningLines.push({
-      symbol: result,
-      cells: [cols[0][row], cols[1][row], cols[2][row]]
-    });
-  }
-}
+    if (multiplier === 'wheel') {
+      multCol[1].classList.add('winner');
+      const totalBase = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
+      setTimeout(() => openWheelModal(resultText, totalBase), 2000);
+    } else {
+      const multNum = parseInt(multiplier) || 1;
+      if (winningLines.length > 0) {
+        const base = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
+        const prize = base * multNum;
+        balance += prize;
+        updateBalance(true);
+        resultText.textContent = `🎉 ¡Ganaste!: Base $${base} x${multNum} = $${prize}`;
+        showFloatingWin(`+$${prize}`);
+      } else {
+        resultText.textContent = 'Intenta de nuevo';
+      }
+    }
 
-// Diagonales
-let result = isWinningLine(grid[0][0], grid[1][1], grid[2][2]);
-if (result) {
-  winningLines.push({
-    symbol: result,
-    cells: [cols[0][0], cols[1][1], cols[2][2]]
-  });
-}
-
-result = isWinningLine(grid[0][2], grid[1][1], grid[2][0]);
-if (result) {
-  winningLines.push({
-    symbol: result,
-    cells: [cols[0][2], cols[1][1], cols[2][0]]
-  });
-}
-
-// 2) Si hay al menos una línea ganadora
-if (winningLines.length > 0) {
-  winningLines.forEach(line => {
-    line.cells.forEach(cell => cell.classList.add('winner'));
-  });
-  multCol[1].classList.add('winner');
-  document.getElementById('winSound').play();
-}
-
-// 3) Calcula premio de TODAS las líneas
-if (multiplier === 'wheel') {
-  multCol[1].classList.add('winner');
-  const totalBase = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
-  setTimeout(() => {
-    openWheelModal(resultText, totalBase);
   }, 2000);
-} else {
-  const multNum = parseInt(multiplier) || 1;
-  if (winningLines.length > 0) {
-    const base = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
-    const prize = base * multNum;
-    balance += prize;
-    updateBalance(true);
-    resultText.textContent = `🎉 ¡Ganaste!: Base $${base} x${multNum} = $${prize}`;
-    showFloatingWin(`+$${prize}`);
-  } else {
-    resultText.textContent = 'Intenta de nuevo';
-  }
 }
-
 
   function openWheelModal(resultText, basePrize) {
     document.getElementById('wheelSound').play();
