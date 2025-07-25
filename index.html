@@ -425,7 +425,7 @@ function spin() {
 
       if (autoSpin) {
         setTimeout(() => {
-          if (!isSpinning) spin();
+         spin();
         }, winningLines.length > 0 ? 2500 : 500);
       }
     }
