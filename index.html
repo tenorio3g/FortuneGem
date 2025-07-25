@@ -398,32 +398,30 @@ function spin() {
       document.getElementById('winSound').play();
     }
 
-    if (multiplier === 'wheel') {
-      multCol[1].classList.add('winner');
-      const totalBase = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
-      setTimeout(() => openWheelModal(resultText, totalBase), 2000);
-    } else {
-      const multNum = parseInt(multiplier) || 1;
-      if (winningLines.length > 0) {
-        const base = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
-        const prize = base * multNum;
-        balance += prize;
-        updateBalance(true);
-        resultText.textContent = `🎉 ¡Ganaste!: Base $${base} x${multNum} = $${prize}`;
-        showFloatingWin(`+$${prize}`);
-      } else {
-        resultText.textContent = 'Intenta de nuevo';
-      }
-    }
-    isSpinning = false; // 🔓 Libera bloqueo
-        // Si está en Auto, lanza otro giro
-    if (autoSpin) {
-      spin();
-    }
+if (multiplier === 'wheel') {
+  multCol[1].classList.add('winner');
+  const totalBase = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
+  setTimeout(() => openWheelModal(resultText, totalBase), 2000);
 
-  }, totalSpinTime); // <--- AHORA usa tiempo dinámico
-
+  // NO llames spin() aquí.
+} else {
+  const multNum = parseInt(multiplier) || 1;
+  if (winningLines.length > 0) {
+    const base = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
+    const prize = base * multNum;
+    balance += prize;
+    updateBalance(true);
+    resultText.textContent = `🎉 ¡Ganaste!: Base $${base} x${multNum} = $${prize}`;
+    showFloatingWin(`+$${prize}`);
+  } else {
+    resultText.textContent = 'Intenta de nuevo';
+  }
+  // ✅ Si no hubo Wheel, sigue normal
+  if (autoSpin) {
+    spin();
+  }
 }
+
 
 
   function openWheelModal(resultText, basePrize) {
@@ -465,11 +463,11 @@ function spin() {
           updateBalance(true);
           resultText.textContent = `🎡 Wheel Bonus: Base $${basePrize} + Ruleta $${prize} = Total $${total}`;
           showFloatingWin(`+$${total}`);
-          setTimeout(() => modal.style.display = 'none', 2000);
-        }
-      }, 5000);
-    }, 2000);
-  }
+setTimeout(() => {
+  modal.style.display = 'none';
+  if (autoSpin) spin();
+}, 2000);
+
 
 
 function toggleAuto() {
