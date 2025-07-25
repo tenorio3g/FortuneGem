@@ -413,15 +413,22 @@ if (winningLines.length > 0) {
   resultText.textContent = `🎉 ¡Ganaste!: Base $${base} x${multNum} = $${prize}`;
   showFloatingWin(`+$${prize}`);
 
-  // 👉 SOLUCIÓN: continuar autoSpin después de mostrar floating win
+  // ✅ Si está en automático, espera y vuelve a girar
   if (autoSpin) {
     setTimeout(() => {
       spin();
-    }, 2500); // espera un poco para que el usuario vea el resultado
+    }, 2500); // Espera para mostrar el premio
   }
+
 } else {
   resultText.textContent = 'Intenta de nuevo';
-  if (autoSpin) spin();
+
+  // ✅ También aquí debe continuar si está en automático
+  if (autoSpin) {
+    setTimeout(() => {
+      spin();
+    }, 500); // Un poco de pausa visual aunque no haya ganado
+  }
 }
 isSpinning = false; // ✅ Siempre libera el bloqueo al final
 
