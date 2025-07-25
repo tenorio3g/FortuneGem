@@ -463,10 +463,10 @@ if (multiplier === 'wheel') {
           updateBalance(true);
           resultText.textContent = `🎡 Wheel Bonus: Base $${basePrize} + Ruleta $${prize} = Total $${total}`;
           showFloatingWin(`+$${total}`);
-setTimeout(() => {
-  modal.style.display = 'none';
-  if (autoSpin) spin();
-}, 2000);
+          setTimeout(() => {
+            modal.style.display = 'none';
+            if (autoSpin) spin();
+          }, 2000);
 
 
 
