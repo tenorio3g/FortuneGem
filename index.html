@@ -412,6 +412,11 @@ if (multiplier === 'wheel') {
     updateBalance(true);
     resultText.textContent = `🎉 ¡Ganaste!: Base $${base} x${multNum} = $${prize}`;
     showFloatingWin(`+$${prize}`);
+    if (autoSpin) {
+  setTimeout(() => {
+    spin();
+  }, 2500); // Espera a que termine la animación del floatingWin
+}
   } else {
     resultText.textContent = 'Intenta de nuevo';
   }
