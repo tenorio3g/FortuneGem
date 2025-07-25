@@ -1,3 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fortune Gem Slot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body {
+      background: linear-gradient(to bottom, #3a003a, #1a001a);
+      font-family: sans-serif;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      overflow: hidden;
+    }
+    h1 {
+      color: gold;
+      text-shadow: 2px 2px 5px #000;
+    }
+    .slot-machine {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px auto;
+      max-width: 100%;
+    }
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .column img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: #222;
+      box-shadow: 0 0 10px #ff00ff;
+      transition: transform 0.3s, filter 0.3s;
+    }
+    .controls {
+      margin-top: 15px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      background: gold;
+      color: black;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #ffcc00;
+    }
+    select {
+      padding: 8px;
+      font-size: 1em;
+      border-radius: 5px;
+      border: none;
+      margin-left: 10px;
+    }
+    .result {
+      margin-top: 15px;
+      font-size: 1.2em;
+    }
+    .winner {
+      animation: shine 0.8s infinite alternate;
+    }
+    @keyframes shine {
+      0% { filter: brightness(1) drop-shadow(0 0 5px gold); transform: scale(1); }
+      100% { filter: brightness(1.8) drop-shadow(0 0 15px gold); transform: scale(1.1); }
+    }
+    #wheelModal {
+      display: none; position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%; background: rgba(0,0,0,0.85);
+      color: #fff; font-size: 1.2em; justify-content: center;
+      align-items: center; flex-direction: column; z-index: 10;
+    }
+    .wheel-content {
+      background: #222; padding: 20px; border-radius: 15px;
+      box-shadow: 0 0 20px gold; text-align: center;
+      max-width: 90%;
+    }
+    .wheel-container {
+      position: relative;
+      width: 200px; height: 200px; margin: 20px auto;
+    }
+    #wheelImage {
+      width: 100%; height: 100%; border-radius: 50%;
+      transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1);
+    }
+    .pointer {
+      position: absolute; top: -10px; left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-bottom: 25px solid gold;
+    }
+    .floating-win {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2.5em; font-weight: bold;
+      color: gold; text-shadow: 2px 2px 5px black, 0 0 15px gold;
+      border: 2px solid #000;
+      padding: 10px 20px;
+      border-radius: 10px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.5s, transform 0.5s;
+      z-index: 15;
+    }
+    .floating-win.show {
+      opacity: 1;
+      transform: translate(-50%, -60%) scale(1.1);
+    }
+    #balance {
+      margin-top: 10px;
+      font-size: 1.2em;
+      color: #0f0;
+    }
+
+    #splash {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #000; display: flex; justify-content: center; align-items: center;
+    flex-direction: column; z-index: 20;
+    color: white;
+    }
+
+
+    
+    #splash img {
+      width: 150px; margin-bottom: 20px;
+    }
+    #destroyScreen {
+      display: none; position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: black; color: red;
+      font-size: 2em; justify-content: center;
+      align-items: center; text-align: center;
+      z-index: 50; flex-direction: column;
+    }
+    @keyframes shake {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(10px, 0); }
+      50% { transform: translate(-10px, 0); }
+      75% { transform: translate(10px, 0); }
+      100% { transform: translate(0, 0); }
+    }
+    .shake {
+      animation: shake 0.5s infinite;
+    }
+
+    
+  </style>
+</head>
+<body>
+
+  <!-- Splash -->
+<!-- Pantalla splash -->
+<div id="splash">
+  <div id="preloader">
+    <p style="font-size: 1.5em; color: gold;">🔄 Cargando...</p>
+  </div>
+  <div id="startButton" style="display: none; flex-direction: column; align-items: center;">
+    <img src="logo_slot.png" alt="Logo Slot" style="width: 150px; margin-bottom: 20px;">
+    <button onclick="startGame()">JUGAR</button>
+  </div>
+</div>
+
+
+  <h1>🎰 Fortune Gem Tenorio</h1>
+  <div id="balance">Saldo: $100</div>
+
+  <div class="controls">
+    Apuesta:
+    <select id="betAmount">
+      <option value="1">$1</option>
+      <option value="2">$2</option>
+      <option value="5">$5</option>
+      <option value="10">$10</option>
+      <option value="100">$100</option>
+      <option value="1000">$1000</option>
+      <option value="10000">$10000</option>
+    </select>
+    <button onclick="spin()">Girar</button>
+    <button id="autoBtn" onclick="toggleAuto()">▶️ Auto</button>
+    <button onclick="setSpeed(1)">x1</button>
+    <button onclick="setSpeed(2)">x2</button>
+    <button onclick="setSpeed(3)">x3</button>
+    <span id="speedStatus">Velocidad: x1</span>
+
+  </div>
+
+  <div class="slot-machine">
+    <div class="column" id="col-0"><img><img><img></div>
+    <div class="column" id="col-1"><img><img><img></div>
+    <div class="column" id="col-2"><img><img><img></div>
+    <div class="column" id="col-mult"><img><img><img></div>
+  </div>
+
+  <div class="result" id="result">¡Buena suerte!</div>
+
+  <div id="floatingWin" class="floating-win"></div>
+
+  <div id="wheelModal">
+    <div class="wheel-content">
+      <div class="wheel-container">
+        <img src="wheel.png" id="wheelImage">
+        <div class="pointer"></div>
+      </div>
+      <div id="wheelStatus">Girando...</div>
+      <div id="wheelResult"></div>
+    </div>
+  </div>
+
+  <div id="destroyScreen">
+    💥🔥 ¡Lo sentimos! Se quemó todo el dinero 🔥💥
+  </div>
+
+  <audio id="spinSound" src="spin.mp3"></audio>
+  <audio id="winSound" src="win.mp3"></audio>
+  <audio id="wheelSound" src="wheel.mp3"></audio>
+  <audio id="bgMusic" src="background.mp3" loop></audio>
+  <audio id="explosionSound" src="explosion.mp3"></audio>
+
 <script>
   const symbols = [
     'symbol_1.png','symbol_2.png','symbol_3.png','symbol_4.png',
@@ -195,3 +421,6 @@
     document.getElementById('speedStatus').textContent = `Velocidad: x${mult}`;
   }
 </script>
+
+</body>
+</html>
