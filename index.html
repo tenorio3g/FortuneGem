@@ -184,6 +184,12 @@
       <option value="10000">$10000</option>
     </select>
     <button onclick="spin()">Girar</button>
+    <button id="autoBtn" onclick="toggleAuto()">▶️ Auto</button>
+    <button onclick="setSpeed(1)">x1</button>
+    <button onclick="setSpeed(2)">x2</button>
+    <button onclick="setSpeed(3)">x3</button>
+    <span id="speedStatus">Velocidad: x1</span>
+
   </div>
 
   <div class="slot-machine">
@@ -443,6 +449,27 @@ function startGame() {
         }
       }, 5000);
     }, 2000);
+  }
+   function toggleAuto() {
+    if (autoSpin) {
+      stopAuto();
+    } else {
+      autoSpin = true;
+      document.getElementById('autoBtn').textContent = '⏹️ Stop';
+      spin();
+      spinInterval = setInterval(spin, 3000);
+    }
+  }
+
+  function stopAuto() {
+    autoSpin = false;
+    clearInterval(spinInterval);
+    document.getElementById('autoBtn').textContent = '▶️ Auto';
+  }
+
+  function setSpeed(mult) {
+    spinSpeed = 100 / mult;
+    document.getElementById('speedStatus').textContent = `Velocidad: x${mult}`;
   }
 </script>
 </body>
