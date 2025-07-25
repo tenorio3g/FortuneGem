@@ -226,6 +226,7 @@
 
 <script>
 
+let spinSpeed = 100;
 
 
 // Lista de imágenes a precargar
@@ -324,37 +325,42 @@ function startGame() {
     return symbols.find(s => src.includes(s));
   }
 
-  function spin() {
-    const bet = parseInt(document.getElementById('betAmount').value);
-    if (balance < bet) {
-      alert('Saldo insuficiente');
-      return;
-    }
-    balance -= bet; updateBalance();
+function spin() {
+  const bet = parseInt(document.getElementById('betAmount').value);
+  if (balance < bet) {
+    alert('Saldo insuficiente');
+    stopAuto();
+    return;
+  }
+  balance -= bet; updateBalance();
 
-    document.getElementById('spinSound').play();
-    const cols = [0,1,2].map(i => document.querySelectorAll(`#col-${i} img`));
-    const multCol = document.querySelectorAll('#col-mult img');
-    const resultText = document.getElementById('result');
-    document.querySelectorAll('img').forEach(img => img.classList.remove('winner'));
-    resultText.textContent = 'Girando...';
+  document.getElementById('spinSound').play();
+  const cols = [0,1,2].map(i => document.querySelectorAll(`#col-${i} img`));
+  const multCol = document.querySelectorAll('#col-mult img');
+  const resultText = document.getElementById('result');
+  document.querySelectorAll('img').forEach(img => img.classList.remove('winner'));
+  resultText.textContent = 'Girando...';
 
-    let interval = setInterval(() => {
-      cols.forEach(col => {
-        const top = symbols[Math.floor(Math.random()*symbols.length)];
-        col[2].src = col[1].src; col[1].src = col[0].src; col[0].src = top;
-      });
-      multCol.forEach(img => {
-        const val = multipliers[Math.floor(Math.random()*multipliers.length)];
-        img.dataset.value = val;
-        img.src = val==='wheel' ? 'mult_wheel.png' : `mult_${val}.png`;
-      });
-    }, 100);
+  let interval = setInterval(() => {
+    cols.forEach(col => {
+      const top = symbols[Math.floor(Math.random() * symbols.length)];
+      col[2].src = col[1].src; col[1].src = col[0].src; col[0].src = top;
+    });
+    multCol.forEach(img => {
+      const val = multipliers[Math.floor(Math.random() * multipliers.length)];
+      img.dataset.value = val;
+      img.src = val === 'wheel' ? 'mult_wheel.png' : `mult_${val}.png`;
+    });
+  }, spinSpeed); // <--- AHORA USA spinSpeed
 
-    setTimeout(() => {
-      clearInterval(interval);
-      const grid = cols.map(col => Array.from(col).map(img => getSymbolName(img.src)));
-      const multiplier = multCol[1].dataset.value;
+  // Ajusta duración según spinSpeed → 20 ciclos
+  let totalSpinTime = spinSpeed * 20;
+
+  setTimeout(() => {
+    clearInterval(interval);
+    const grid = cols.map(col => Array.from(col).map(img => getSymbolName(img.src)));
+    const multiplier = multCol[1].dataset.value;
+
     // --- MULTI-WIN ---
     let winningLines = [];
     function isWinningLine(s1, s2, s3) {
@@ -403,8 +409,10 @@ function startGame() {
       }
     }
 
-  }, 2000);
+  }, totalSpinTime); // <--- AHORA usa tiempo dinámico
+
 }
+
 
   function openWheelModal(resultText, basePrize) {
     document.getElementById('wheelSound').play();
