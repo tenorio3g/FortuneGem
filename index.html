@@ -181,9 +181,20 @@
 </div>
 
 
-  <h1>🎰 Fortune Gem Slot</h1>
-  <div id="balance">Saldo: $100</div>
+<h1 style="text-align:center;">🎰 Fortune Gem Slot</h1>
+<div id="balance" style="text-align:center;">Saldo: $100</div>
+
+<div class="slot-machine-container">
+
+  <!-- Slot Columns -->
   <div class="slot-machine">
+    <div class="column" id="col-0"><img><img><img></div>
+    <div class="column" id="col-1"><img><img><img></div>
+    <div class="column" id="col-2"><img><img><img></div>
+    <div class="column" id="col-mult"><img><img><img></div>
+  </div>
+
+  <!-- Botones y controles -->
   <div class="controls">
     Apuesta:
     <select id="betAmount">
@@ -200,30 +211,25 @@
     <button onclick="setSpeed(2)">x2</button>
     <button onclick="setSpeed(3)">x3</button>
     <span id="speedStatus">Velocidad: x1</span>
-
   </div>
 
-  <div class="slot-machine">
-    <div class="column" id="col-0"><img><img><img></div>
-    <div class="column" id="col-1"><img><img><img></div>
-    <div class="column" id="col-2"><img><img><img></div>
-    <div class="column" id="col-mult"><img><img><img></div>
-  </div>
+</div>
 
-  <div class="result" id="result">¡Buena suerte!</div>
+<!-- Resultado -->
+<div class="result" id="result" style="text-align:center;">¡Buena suerte!</div>
+<div id="floatingWin" class="floating-win"></div>
 
-  <div id="floatingWin" class="floating-win"></div>
-
-  <div id="wheelModal">
-    <div class="wheel-content">
-      <div class="wheel-container">
-        <img src="wheel.png" id="wheelImage">
-        <div class="pointer"></div>
-      </div>
-      <div id="wheelStatus">Girando...</div>
-      <div id="wheelResult"></div>
+<!-- Modal de la ruleta -->
+<div id="wheelModal">
+  <div class="wheel-content">
+    <div class="wheel-container">
+      <img src="wheel.png" id="wheelImage">
+      <div class="pointer"></div>
     </div>
+    <div id="wheelStatus">Girando...</div>
+    <div id="wheelResult"></div>
   </div>
+</div>
 
   <div id="destroyScreen">
     💥🔥 ¡Lo sentimos! Se quemó todo el dinero 🔥💥
