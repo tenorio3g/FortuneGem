@@ -405,21 +405,22 @@ if (multiplier === 'wheel') {
   setTimeout(() => openWheelModal(resultText, totalBase), 2000);
 } else {
   const multNum = parseInt(multiplier) || 1;
-  if (winningLines.length > 0) {
-    const base = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
-    const prize = base * multNum;
-    balance += prize;
-    updateBalance(true);
-    resultText.textContent = `🎉 ¡Ganaste!: Base $${base} x${multNum} = $${prize}`;
-    showFloatingWin(`+$${prize}`);
-    if (autoSpin) {
-  setTimeout(() => {
-    spin();
-  }, 2500); // Espera a que termine la animación del floatingWin
-}
-  } else {
-    resultText.textContent = 'Intenta de nuevo';
+if (winningLines.length > 0) {
+  const base = winningLines.reduce((sum, line) => sum + (symbolValues[line.symbol] * bet), 0);
+  const prize = base * multNum;
+  balance += prize;
+  updateBalance(true);
+  resultText.textContent = `🎉 ¡Ganaste!: Base $${base} x${multNum} = $${prize}`;
+  showFloatingWin(`+$${prize}`);
+
+  // 👉 SOLUCIÓN: continuar autoSpin después de mostrar floating win
+  if (autoSpin) {
+    setTimeout(() => {
+      spin();
+    }, 2500); // espera un poco para que el usuario vea el resultado
   }
+} else {
+  resultText.textContent = 'Intenta de nuevo';
   if (autoSpin) spin();
 }
 isSpinning = false; // ✅ Siempre libera el bloqueo al final
