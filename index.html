@@ -169,164 +169,161 @@
 <audio id="explosionSound" src="explosion.mp3"></audio>
 
 <script>
+const symbols = [
+  "symbol_1.png", "symbol_2.png", "symbol_3.png", "symbol_4.png",
+  "symbol_5.png", "symbol_6.png", "symbol_7.png", "symbol_8.png"
+];
+
+const multSymbols = [
+  "mult_1.png", "mult_2.png", "mult_3.png", "mult_5.png", "mult_10.png", "mult_wheel.png"
+];
+
 let balance = 100;
 let autoSpin = false;
-let speed = 1;
-let isSpinning = false;
-let symbols = ["rojo", "azul", "campana", "spin"];
-let mults = ["x2", "x3", "x4", "x5"];
-let interval;
+let spinSpeed = 1;
 
-const columns = [
-  document.getElementById("col-0"),
-  document.getElementById("col-1"),
-  document.getElementById("col-2"),
-];
-const multColumn = document.getElementById("col-mult");
-
-const splash = document.getElementById("splash");
-const startButton = document.getElementById("startButton");
-const spinSound = document.getElementById("spinSound");
-const winSound = document.getElementById("winSound");
-const explosionSound = document.getElementById("explosionSound");
-const bgMusic = document.getElementById("bgMusic");
-const floatingWin = document.getElementById("floatingWin");
-const wheelModal = document.getElementById("wheelModal");
-const wheelImage = document.getElementById("wheelImage");
-const wheelSound = document.getElementById("wheelSound");
-
-function preloadImages() {
-  const images = [...symbols, ...mults];
-  images.forEach((name) => {
-    const img = new Image();
-    img.src = name.includes("x") ? `img/mult/${name}.png` : `img/symbols/${name}.png`;
-  });
+function updateBalance(amount) {
+  balance += amount;
+  document.getElementById("balance").textContent = "Saldo: $" + balance;
+  if (balance <= 0) {
+    document.getElementById("destroyScreen").style.display = "flex";
+    document.getElementById("explosionSound").play();
+    autoSpin = false;
+  }
 }
 
-window.onload = () => {
-  preloadImages();
+function getRandomSymbol() {
+  return symbols[Math.floor(Math.random() * symbols.length)];
+}
+
+function getRandomMultSymbol() {
+  return multSymbols[Math.floor(Math.random() * multSymbols.length)];
+}
+
+function spin() {
+  const bet = parseInt(document.getElementById("betAmount").value);
+  if (balance < bet) return;
+
+  updateBalance(-bet);
+  document.getElementById("spinSound").play();
+
+  // Llenar columnas
+  for (let col = 0; col < 3; col++) {
+    const column = document.getElementById(`col-${col}`);
+    column.innerHTML = "";
+    for (let i = 0; i < 3; i++) {
+      const img = document.createElement("img");
+      img.src = getRandomSymbol();
+      column.appendChild(img);
+    }
+  }
+
+  // Multiplicadores
+  const colMult = document.getElementById("col-mult");
+  colMult.innerHTML = "";
+  for (let i = 0; i < 3; i++) {
+    const img = document.createElement("img");
+    img.src = getRandomMultSymbol();
+    colMult.appendChild(img);
+  }
+
+  // Verificar ganancia
+  const center0 = document.getElementById("col-0").children[1].src;
+  const center1 = document.getElementById("col-1").children[1].src;
+  const center2 = document.getElementById("col-2").children[1].src;
+
+  const multCenter = document.getElementById("col-mult").children[1].src;
+
+  let reward = 0;
+
+  if (center0 === center1 && center1 === center2) {
+    if (center0.includes("symbol_7")) reward = 4 * bet;
+    else if (center0.includes("symbol_6")) reward = 6 * bet;
+    else reward = 2 * bet;
+
+    if (multCenter.includes("mult_2")) reward *= 2;
+    else if (multCenter.includes("mult_3")) reward *= 3;
+    else if (multCenter.includes("mult_5")) reward *= 5;
+    else if (multCenter.includes("mult_10")) reward *= 10;
+    else if (multCenter.includes("mult_wheel")) {
+      showWheel();
+      return;
+    }
+
+    updateBalance(reward);
+    document.getElementById("winSound").play();
+    showFloatingWin(reward);
+    document.getElementById("result").textContent = `¡Ganaste $${reward}!`;
+  } else {
+    document.getElementById("result").textContent = "¡Sigue intentando!";
+  }
+}
+
+function showFloatingWin(amount) {
+  const el = document.getElementById("floatingWin");
+  el.textContent = "+$" + amount;
+  el.style.display = "block";
+  el.style.opacity = 1;
+  el.style.top = "50%";
   setTimeout(() => {
-    document.getElementById("preloader").style.display = "none";
-    startButton.style.display = "flex";
-  }, 2000);
-};
-
-function startGame() {
-  splash.style.display = "none";
-  bgMusic.play();
+    el.style.opacity = 0;
+    el.style.top = "30%";
+  }, 1000);
 }
 
-function setSpeed(val) {
-  speed = val;
-  document.getElementById("speedStatus").innerText = `Velocidad: x${val}`;
+function showWheel() {
+  document.getElementById("wheelModal").style.display = "flex";
+  document.getElementById("wheelSound").play();
+  const wheelImage = document.getElementById("wheelImage");
+  const resultText = document.getElementById("wheelResult");
+
+  let spins = 360 * 4 + Math.floor(Math.random() * 360);
+  wheelImage.style.transition = "transform 4s ease-out";
+  wheelImage.style.transform = `rotate(${spins}deg)`;
+
+  setTimeout(() => {
+    const sector = Math.floor((spins % 360) / 60) + 1;
+    let prize = sector * 10;
+    if (sector === 6) prize = 100; // premio grande
+    updateBalance(prize);
+    resultText.textContent = `¡Ganaste en la ruleta $${prize}!`;
+    document.getElementById("winSound").play();
+    setTimeout(() => {
+      document.getElementById("wheelModal").style.display = "none";
+    }, 3000);
+  }, 4000);
 }
 
 function toggleAuto() {
   autoSpin = !autoSpin;
-  document.getElementById("autoBtn").innerText = autoSpin ? "⏹️ Stop" : "▶️ Auto";
-  if (autoSpin && !isSpinning) spin();
+  if (autoSpin) autoLoop();
 }
 
-function spin() {
-  if (isSpinning) return;
-  const bet = parseInt(document.getElementById("betAmount").value);
-  if (balance < bet) return;
+function autoLoop() {
+  if (!autoSpin) return;
+  spin();
+  setTimeout(autoLoop, 3000 / spinSpeed);
+}
 
-  isSpinning = true;
-  balance -= bet;
-  document.getElementById("balance").innerText = `Saldo: $${balance}`;
-  document.getElementById("result").innerText = "Girando...";
-  spinSound.play();
+function setSpeed(mult) {
+  spinSpeed = mult;
+  document.getElementById("speedStatus").textContent = `Velocidad: x${mult}`;
+}
 
-  let reels = columns.map(() => Array.from({ length: 3 }, () => symbols[Math.floor(Math.random() * symbols.length)]));
-  let multsResult = Array.from({ length: 3 }, () => mults[Math.floor(Math.random() * mults.length)]);
-
-  columns.forEach((col, i) => {
-    col.innerHTML = reels[i].map(sym => `<img src="img/symbols/${sym}.png">`).join("");
-  });
-
-  multColumn.innerHTML = multsResult.map(mult => `<img src="img/mult/${mult}.png">`).join("");
-
+// Splash screen
+window.addEventListener("load", () => {
   setTimeout(() => {
-    const midSymbols = reels.map(r => r[1]);
-    const midMult = multsResult[1];
-    const [a, b, c] = midSymbols;
-    let resultText = "Perdiste";
-
-    if (a === b && b === c) {
-      let win = 0;
-      if (a === "campana") win = 2;
-      if (a === "rojo") win = 4;
-      if (a === "azul") win = 6;
-      const mult = parseInt(midMult.replace("x", ""));
-      win *= mult;
-      balance += win;
-      winSound.play();
-      showFloatingWin(`+ $${win}`);
-      resultText = `¡Ganaste $${win}!`;
-
-      if (a === "spin") {
-        resultText += " 🎁 Bonificación";
-        setTimeout(() => showWheel(), 1000);
-      } else {
-        endSpin(resultText);
-      }
-    } else {
-      endSpin(resultText);
-    }
-  }, 1000 / speed);
-}
-
-function endSpin(text) {
-  document.getElementById("balance").innerText = `Saldo: $${balance}`;
-  document.getElementById("result").innerText = text;
-  isSpinning = false;
-  if (balance <= 0) {
-    document.getElementById("destroyScreen").style.display = "block";
-    explosionSound.play();
-    return;
-  }
-  if (autoSpin) spin();
-}
-
-function showFloatingWin(text) {
-  floatingWin.innerText = text;
-  floatingWin.style.display = "block";
-  floatingWin.style.opacity = 1;
-  floatingWin.style.top = "70%";
-  setTimeout(() => {
-    floatingWin.style.top = "20%";
-    floatingWin.style.opacity = 0;
+    document.getElementById("preloader").style.display = "none";
+    document.getElementById("startButton").style.display = "flex";
   }, 1000);
-  setTimeout(() => {
-    floatingWin.style.display = "none";
-  }, 2000);
-}
+});
 
-function showWheel() {
-  wheelModal.style.display = "flex";
-  wheelImage.style.transform = "rotate(0deg)";
-  wheelSound.play();
-
-  const angle = 360 * 5 + Math.floor(Math.random() * 360);
-  wheelImage.style.transition = "transform 3s ease-out";
-  wheelImage.style.transform = `rotate(${angle}deg)`;
-
-  setTimeout(() => {
-    const prize = ["$5", "$10", "$20", "$50", "$100"][Math.floor(Math.random() * 5)];
-    document.getElementById("wheelStatus").innerText = "¡Ganaste!";
-    document.getElementById("wheelResult").innerText = prize;
-    balance += parseInt(prize.replace("$", ""));
-    document.getElementById("balance").innerText = `Saldo: $${balance}`;
-    winSound.play();
-    setTimeout(() => {
-      wheelModal.style.display = "none";
-      isSpinning = false;
-      if (autoSpin) spin();
-    }, 2000);
-  }, 3000);
+function startGame() {
+  document.getElementById("splash").style.display = "none";
+  document.getElementById("bgMusic").play();
 }
 </script>
+
 
 
 </body>
