@@ -87,9 +87,8 @@
 </style>
 
 </head>
-<body>
+<body style="background-image: url('slot_bg.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
 
-  <!-- Splash -->
 <!-- Pantalla splash -->
 <div id="splash">
   <div id="preloader">
@@ -101,7 +100,6 @@
   </div>
 </div>
 
-
 <h1 style="text-align:center;">🎰 Fortune Gem Slot</h1>
 <div id="balance" style="text-align:center;">Saldo: $100</div>
 
@@ -109,10 +107,18 @@
 
   <!-- Slot Columns -->
   <div class="slot-machine">
-    <div class="column" id="col-0"><img><img><img></div>
-    <div class="column" id="col-1"><img><img><img></div>
-    <div class="column" id="col-2"><img><img><img></div>
-    <div class="column" id="col-mult"><img><img><img></div>
+    <div class="column" id="col-0">
+      <img src="symbol.png"><img src="symbol.png"><img src="symbol.png">
+    </div>
+    <div class="column" id="col-1">
+      <img src="symbol.png"><img src="symbol.png"><img src="symbol.png">
+    </div>
+    <div class="column" id="col-2">
+      <img src="symbol.png"><img src="symbol.png"><img src="symbol.png">
+    </div>
+    <div class="column" id="col-mult">
+      <img src="mult.png"><img src="mult.png"><img src="mult.png">
+    </div>
   </div>
 
   <!-- Botones y controles -->
@@ -133,7 +139,6 @@
     <button onclick="setSpeed(3)">x3</button>
     <span id="speedStatus">Velocidad: x1</span>
   </div>
-
 </div>
 
 <!-- Resultado -->
@@ -152,15 +157,16 @@
   </div>
 </div>
 
-  <div id="destroyScreen">
-    💥🔥 ¡Lo sentimos! Se quemó todo el dinero 🔥💥
-  </div>
+<div id="destroyScreen">
+  💥🔥 ¡Lo sentimos! Se quemó todo el dinero 🔥💥
+</div>
 
-  <audio id="spinSound" src="spin.mp3"></audio>
-  <audio id="winSound" src="win.mp3"></audio>
-  <audio id="wheelSound" src="wheel.mp3"></audio>
-  <audio id="bgMusic" src="background.mp3" loop></audio>
-  <audio id="explosionSound" src="explosion.mp3"></audio>
+<!-- Audios -->
+<audio id="spinSound" src="spin.mp3"></audio>
+<audio id="winSound" src="win.mp3"></audio>
+<audio id="wheelSound" src="wheel.mp3"></audio>
+<audio id="bgMusic" src="background.mp3" loop></audio>
+<audio id="explosionSound" src="explosion.mp3"></audio>
 
 <script>
 let spinSpeed = 100;
